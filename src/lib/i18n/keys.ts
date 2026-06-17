@@ -797,6 +797,7 @@ export type TranslationKeys =
   | 'settings.appearance.lang_pt'
   | 'settings.appearance.lang_ru'
   | 'settings.appearance.lang_zh'
+  | 'settings.appearance.lang_zh_tw'
   | 'settings.appearance.language'
   | 'settings.appearance.more_themes'
   | 'settings.appearance.theme'

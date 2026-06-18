@@ -105,6 +105,8 @@ type QueueItemProgressPayload = {
 type ConvertProgressPayload = {
   id: number;
   percent: number;
+  speed?: number | null;
+  eta_seconds?: number | null;
 };
 
 type ConvertCompletePayload = {
@@ -342,7 +344,12 @@ export async function initDownloadListener(): Promise<() => void> {
   const unlistenConvertProgress = await listen<ConvertProgressPayload>(
     "convert-progress",
     (event) => {
-      updateFileProgress(event.payload.id, event.payload.percent);
+      updateFileProgress(
+        event.payload.id,
+        event.payload.percent,
+        event.payload.speed ?? undefined,
+        event.payload.eta_seconds ?? undefined,
+      );
     },
   );
 

@@ -29,6 +29,7 @@ pub struct AppState {
     pub active_downloads: Arc<tokio::sync::Mutex<HashMap<u64, CancellationToken>>>,
     pub active_generic_downloads:
         Arc<tokio::sync::Mutex<HashMap<u64, (String, CancellationToken)>>>,
+    pub active_conversions: Arc<tokio::sync::Mutex<HashMap<u64, CancellationToken>>>,
     pub registry: core::registry::PlatformRegistry,
     pub download_queue: Arc<tokio::sync::Mutex<core::queue::DownloadQueue>>,
     pub torrent_session: Arc<tokio::sync::Mutex<Option<Arc<librqbit::Session>>>>,
@@ -68,6 +69,7 @@ pub fn run() {
     let state = AppState {
         active_downloads: Arc::new(tokio::sync::Mutex::new(HashMap::new())),
         active_generic_downloads: Arc::new(tokio::sync::Mutex::new(HashMap::new())),
+        active_conversions: Arc::new(tokio::sync::Mutex::new(HashMap::new())),
         registry,
         download_queue: Arc::new(tokio::sync::Mutex::new(core::queue::DownloadQueue::new(2))),
         torrent_session,
@@ -201,7 +203,9 @@ pub fn run() {
                 }
             });
             core::ytdlp::set_keep_vtt_fn(|| {
-                storage::config::load_settings_standalone().download.keep_vtt
+                storage::config::load_settings_standalone()
+                    .download
+                    .keep_vtt
             });
             core::ytdlp::set_translate_metadata_fn(|| {
                 let s = storage::config::load_settings_standalone();
@@ -524,6 +528,10 @@ pub fn run() {
             commands::clip::clip_video,
             commands::reencode::reencode_video,
             commands::diagnostics::get_hwaccel_info,
+            commands::convert::convert_probe_file,
+            commands::convert::convert_extract_thumbnail,
+            commands::convert::convert_start,
+            commands::convert::convert_cancel,
             commands::downloads::detect_platform,
             commands::downloads::check_cookie_error,
             commands::downloads::validate_output_path,

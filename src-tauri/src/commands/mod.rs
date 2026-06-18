@@ -6,6 +6,7 @@ pub mod bilibili_auth;
 pub mod browser_extension;
 pub mod channels;
 pub mod clip;
+pub mod convert;
 pub mod diagnostics;
 pub mod downloads;
 pub mod host_queue;

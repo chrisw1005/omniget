@@ -415,6 +415,11 @@
 }
 
 :root, [data-theme] {
+  /* Recolor native form-control UI (focus rings, checkboxes, text caret) from the
+     macOS system blue to the app accent. Without this, WKWebView falls back to the
+     OS accent (blue) on focused selects/inputs. */
+  accent-color: var(--accent);
+  caret-color: var(--accent);
   --bg: var(--primary);
   --surface: var(--button);
   --surface-hi: var(--button-elevated);

@@ -88,9 +88,12 @@
     invoke<{ id: string; enabled: boolean; nav: { route: string; label: Record<string, string>; icon_svg: string | null; group: string; order: number }[] }[]>("list_plugins")
       .then((plugins) => {
         const items: NavItem[] = [];
+        const coreRoutes = new Set(CORE_NAV_ITEMS.map((i) => i.href));
         for (const p of plugins) {
           if (!p.enabled) continue;
           for (const n of p.nav) {
+            // A core nav item already owns this route (e.g. /convert is now built-in).
+            if (coreRoutes.has(n.route)) continue;
             if (n.route === "/study/focus" && !STUDY_FOCUS_ENABLED) continue;
             if (n.route === "/study/progress" && !STUDY_PROGRESS_ENABLED) continue;
             if (n.route === "/study/achievements" && !STUDY_ACHIEVEMENTS_ENABLED) continue;

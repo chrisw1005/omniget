@@ -422,6 +422,44 @@ pub async fn convert(
     }
 }
 
+/// Extract a single frame from a video as a base64-encoded JPEG data URL.
+/// Returns `Ok(None)` for inputs without a decodable video frame (e.g. audio-only files).
+pub async fn extract_thumbnail(path: &Path, at_seconds: f64) -> anyhow::Result<Option<String>> {
+    use base64::Engine;
+
+    let seek = format!("{:.2}", at_seconds.max(0.0));
+    let output = crate::core::process::command("ffmpeg")
+        .args([
+            "-ss",
+            &seek,
+            "-i",
+            &path.to_string_lossy(),
+            "-frames:v",
+            "1",
+            "-vf",
+            "scale=320:-2",
+            "-f",
+            "image2",
+            "-c:v",
+            "mjpeg",
+            "-q:v",
+            "4",
+            "pipe:1",
+        ])
+        .stdout(std::process::Stdio::piped())
+        .stderr(std::process::Stdio::null())
+        .output()
+        .await
+        .map_err(|e| anyhow!("Failed to run ffmpeg: {}", e))?;
+
+    if !output.status.success() || output.stdout.is_empty() {
+        return Ok(None);
+    }
+
+    let b64 = base64::engine::general_purpose::STANDARD.encode(&output.stdout);
+    Ok(Some(format!("data:image/jpeg;base64,{}", b64)))
+}
+
 #[derive(Debug, Clone, Serialize, Deserialize, Default)]
 pub struct MetadataEmbed {
     pub title: Option<String>,

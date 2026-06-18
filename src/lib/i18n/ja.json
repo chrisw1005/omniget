@@ -960,6 +960,7 @@
   },
   "about": {
     "tab": {
+      "overview": "概要",
       "terms": "利用規約",
       "project": "プロジェクト",
       "roadmap": "ロードマップ",
@@ -1006,7 +1007,18 @@
     "roadmap_community_discord": "Discordでお気軽にどうぞ：",
     "roadmap_community_issue": "またはリポジトリでIssueを作成してください：",
     "tagline": "どこからでも、何でもダウンロード。",
-    "credit": "tonho.wtf が愛を込めて作りました"
+    "credit": "tonho.wtf が愛を込めて作りました",
+    "fork_title": "コミュニティフォーク",
+    "fork_desc": "{{user}} がメンテナンス、{{author}} のオリジナルプロジェクトをベースにしています。",
+    "fork_view": "フォークを見る",
+    "original_view": "オリジナル",
+    "fork_by": "フォーク",
+    "card_changelog_title": "変更履歴",
+    "card_changelog_desc": "各リリースの新機能。",
+    "card_project_title": "プロジェクト",
+    "card_project_desc": "機能、技術スタック、クレジット。",
+    "card_terms_title": "利用規約",
+    "card_terms_desc": "OmniGet を責任を持って使いましょう。"
   },
   "marketplace": {
     "title": "マーケットプレイス",

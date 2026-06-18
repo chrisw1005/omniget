@@ -960,6 +960,7 @@
   },
   "about": {
     "tab": {
+      "overview": "обзор",
       "terms": "условия",
       "project": "проект",
       "roadmap": "план",
@@ -1006,7 +1007,18 @@
     "roadmap_community_discord": "свяжитесь с нами в Discord:",
     "roadmap_community_issue": "или откройте задачу в репозитории:",
     "tagline": "Скачивайте что угодно, откуда угодно.",
-    "credit": "Сделано с любовью tonho.wtf"
+    "credit": "Сделано с любовью tonho.wtf",
+    "fork_title": "Форк сообщества",
+    "fork_desc": "Поддерживается {{user}}, на основе оригинального проекта {{author}}.",
+    "fork_view": "Открыть форк",
+    "original_view": "Оригинал",
+    "fork_by": "Форк от",
+    "card_changelog_title": "История изменений",
+    "card_changelog_desc": "Что нового в каждом выпуске.",
+    "card_project_title": "О проекте",
+    "card_project_desc": "Возможности, технологии и благодарности.",
+    "card_terms_title": "Условия использования",
+    "card_terms_desc": "Используйте OmniGet ответственно."
   },
   "marketplace": {
     "title": "Маркетплейс",

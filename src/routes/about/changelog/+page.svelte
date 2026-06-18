@@ -89,40 +89,44 @@
   .changelog-page {
     display: flex;
     flex-direction: column;
-    gap: calc(var(--padding) * 1.5);
+    gap: var(--space-4);
   }
 
   .version-row {
-    display: flex;
+    display: inline-flex;
     align-items: center;
-    justify-content: center;
-    gap: calc(var(--padding) / 2);
+    gap: var(--space-2);
+    align-self: flex-start;
+    padding: 4px var(--space-3);
+    background: var(--accent-soft);
+    border-radius: var(--radius-full);
   }
 
   .version-label {
-    font-size: 12.5px;
-    font-weight: 500;
-    color: var(--gray);
+    font-size: var(--text-xs);
+    color: var(--text-muted);
   }
 
   .version-value {
-    font-size: 12.5px;
-    font-weight: 500;
-    color: var(--blue);
+    font-family: var(--font-mono);
+    font-size: var(--text-xs);
+    font-weight: 600;
+    color: var(--accent);
+    font-variant-numeric: tabular-nums;
   }
 
   .loading {
     display: flex;
     align-items: center;
     justify-content: center;
-    padding: calc(var(--padding) * 3) 0;
+    padding: var(--space-7) 0;
   }
 
   .spinner {
     width: 24px;
     height: 24px;
-    border: 2px solid var(--input-border);
-    border-top-color: var(--blue);
+    border: 2px solid var(--border);
+    border-top-color: var(--accent);
     border-radius: 50%;
     animation: spin 0.6s linear infinite;
   }
@@ -135,50 +139,49 @@
 
   .card {
     width: 100%;
-    background: var(--button);
-    box-shadow: var(--button-box-shadow);
-    border-radius: var(--border-radius);
-    padding: calc(var(--padding) + 4px);
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-md);
+    padding: var(--space-5);
   }
 
   .empty-card {
     display: flex;
     align-items: center;
     justify-content: center;
-    padding: calc(var(--padding) * 2);
+    padding: var(--space-6);
   }
 
   .empty-text {
-    font-size: 14.5px;
-    font-weight: 500;
-    color: var(--gray);
+    font-size: var(--text-sm);
+    color: var(--text-muted);
   }
 
   .markdown-content {
-    font-size: 13px;
-    font-weight: 400;
+    font-size: var(--text-sm);
     line-height: 1.7;
-    color: var(--secondary);
+    color: var(--text);
   }
 
   .markdown-content :global(h2) {
-    font-size: 18px;
-    font-weight: 500;
-    margin: 0 0 calc(var(--padding) / 2);
-    letter-spacing: -0.5px;
+    font-family: var(--font-display);
+    font-size: var(--text-lg);
+    font-weight: 600;
+    margin: 0 0 var(--space-2);
+    letter-spacing: -0.01em;
   }
 
   .markdown-content :global(h3) {
-    font-size: 15px;
-    font-weight: 500;
-    margin: var(--padding) 0 calc(var(--padding) / 2);
+    font-size: var(--text-md);
+    font-weight: 600;
+    margin: var(--space-4) 0 var(--space-2);
   }
 
   .markdown-content :global(h4) {
-    font-size: 13px;
-    font-weight: 500;
-    margin: var(--padding) 0 calc(var(--padding) / 4);
-    color: var(--gray);
+    font-size: var(--text-sm);
+    font-weight: 600;
+    margin: var(--space-3) 0 var(--space-1);
+    color: var(--text-muted);
   }
 
   .markdown-content :global(p) {
@@ -187,13 +190,13 @@
 
   .markdown-content :global(li) {
     margin: 0 0 4px;
-    padding-left: calc(var(--padding) / 2);
+    padding-left: var(--space-2);
     list-style: none;
   }
 
   .markdown-content :global(li::before) {
     content: "•";
-    color: var(--blue);
+    color: var(--accent);
     margin-right: 6px;
   }
 
@@ -202,14 +205,15 @@
   }
 
   .markdown-content :global(code) {
-    font-size: 12px;
+    font-family: var(--font-mono);
+    font-size: var(--text-xs);
     padding: 1px 5px;
-    background: var(--button-elevated);
-    border-radius: 4px;
+    background: var(--surface-hi);
+    border-radius: var(--radius-xs);
   }
 
   .markdown-content :global(a) {
-    color: var(--blue);
+    color: var(--accent);
     text-decoration: none;
   }
 

@@ -44,6 +44,20 @@ cross-platform, open-source, instagram-downloader, tiktok-downloader, bilibili, 
 
 ---
 
+## 🍴 About this fork
+
+This is a community fork of **[tonhowtf/omniget](https://github.com/tonhowtf/omniget)**, maintained by **[@chrisw1005](https://github.com/chrisw1005)**. All credit for OmniGet goes to the original author; this fork only layers a few changes on top.
+
+**What this fork adds:**
+
+- **Redesigned Converter** — drag-and-drop multi-file conversion, per-file collapsible settings, video thumbnails + metadata, quality-vs-size control with hardware acceleration (VideoToolbox), and real transcode progress. The convert backend is integrated into the core app instead of the external plugin.
+- **Full Traditional Chinese (繁體中文) localization** — Taiwan terminology throughout, plus a dedicated `zh-TW` language option.
+- **Brand-orange accent** across the macOS-native shell (instead of the macOS system blue).
+
+Everything below is from the upstream project and still applies. Fork source: **[chrisw1005/omniget](https://github.com/chrisw1005/omniget)** · for the original, see **[tonhowtf/omniget](https://github.com/tonhowtf/omniget)**.
+
+---
+
 ## Download and install
 
 Pick your system, download the latest release, and open it. There is no installer to click through and no admin rights are needed.
@@ -298,7 +312,7 @@ Production build: `pnpm tauri build`.
 
 ## Contribute
 
-Found a bug or have a feature idea? [Open an issue](https://github.com/tonhowtf/omniget/issues). Pull requests are welcome, see [CONTRIBUTING.md](CONTRIBUTING.md).
+Found a bug or have a feature idea? [Open an issue](https://github.com/tonhowtf/omniget/issues). Pull requests are welcome, see [CONTRIBUTING.md](CONTRIBUTING.md). For issues specific to **this fork** (the converter redesign, Traditional Chinese, the orange theme), use the [fork's issue tracker](https://github.com/chrisw1005/omniget/issues) instead.
 
 OmniGet is translated on [Weblate](https://hosted.weblate.org/engage/omniget/). Pick a language, translate in your browser, and Weblate opens a pull request automatically.
 

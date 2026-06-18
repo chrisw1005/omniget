@@ -960,6 +960,7 @@
   },
   "about": {
     "tab": {
+      "overview": "panoramica",
       "terms": "termini",
       "project": "progetto",
       "roadmap": "roadmap",
@@ -1006,7 +1007,18 @@
     "roadmap_community_discord": "scrivici su Discord:",
     "roadmap_community_issue": "oppure apri una issue nel repository:",
     "tagline": "Scarica qualsiasi cosa, da qualsiasi luogo.",
-    "credit": "Fatto con amore da tonho.wtf"
+    "credit": "Fatto con amore da tonho.wtf",
+    "fork_title": "Fork della community",
+    "fork_desc": "Gestito da {{user}}, basato sul progetto originale di {{author}}.",
+    "fork_view": "Vedi fork",
+    "original_view": "Originale",
+    "fork_by": "Fork di",
+    "card_changelog_title": "Novità",
+    "card_changelog_desc": "Le novità di ogni versione.",
+    "card_project_title": "Il progetto",
+    "card_project_desc": "Funzioni, tecnologie e crediti.",
+    "card_terms_title": "Termini d'uso",
+    "card_terms_desc": "Usa OmniGet in modo responsabile."
   },
   "marketplace": {
     "title": "Marketplace",

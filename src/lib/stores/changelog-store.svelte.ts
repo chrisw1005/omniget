@@ -1,4 +1,5 @@
 import { getVersion } from "@tauri-apps/api/app";
+import { localReleaseNotes } from "$lib/release-notes";
 
 const STORAGE_KEY = "omniget_last_seen_version";
 const CHANGELOG_BODY_KEY = "omniget_pending_changelog";
@@ -39,7 +40,7 @@ export async function initChangelog(): Promise<void> {
   try {
     currentVersion = await getVersion();
   } catch {
-    currentVersion = "0.7.0";
+    currentVersion = "0.8.0";
   }
 
   const lastSeen = localStorage.getItem(STORAGE_KEY);
@@ -69,9 +70,16 @@ export async function initChangelog(): Promise<void> {
 export async function fetchChangelog(): Promise<string> {
   if (changelogBody) return changelogBody;
 
+  // Bundled fork release notes take priority (works offline, no published release needed).
+  const local = localReleaseNotes(currentVersion);
+  if (local) {
+    changelogBody = local;
+    return local;
+  }
+
   try {
     const res = await fetch(
-      `https://api.github.com/repos/tonhowtf/omniget/releases/tags/v${currentVersion}`,
+      `https://api.github.com/repos/chrisw1005/omniget/releases/tags/v${currentVersion}`,
       { headers: { Accept: "application/vnd.github.v3+json" } }
     );
     if (res.ok) {
@@ -85,7 +93,7 @@ export async function fetchChangelog(): Promise<string> {
 
   try {
     const res = await fetch(
-      "https://api.github.com/repos/tonhowtf/omniget/releases/latest",
+      "https://api.github.com/repos/chrisw1005/omniget/releases/latest",
       { headers: { Accept: "application/vnd.github.v3+json" } }
     );
     if (res.ok) {

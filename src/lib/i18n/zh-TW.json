@@ -960,12 +960,19 @@
   },
   "about": {
     "tab": {
+      "overview": "總覽",
       "terms": "使用條款",
       "project": "專案",
       "roadmap": "開發計畫",
       "changelog": "更新紀錄",
       "debug": "除錯資訊"
     },
+    "card_changelog_title": "更新紀錄",
+    "card_changelog_desc": "每個版本的新功能與修正。",
+    "card_project_title": "關於專案",
+    "card_project_desc": "功能、技術與致謝。",
+    "card_terms_title": "使用條款",
+    "card_terms_desc": "負責任地使用 OmniGet。",
     "debug": {
       "title": "除錯資訊",
       "description": "可貼到錯誤回報的環境資訊。不包含任何敏感資料。",
@@ -1006,7 +1013,12 @@
     "roadmap_community_discord": "可透過 Discord 聯絡：",
     "roadmap_community_issue": "或在專案儲存庫建立 Issue：",
     "tagline": "隨時隨地，下載一切。",
-    "credit": "由 tonho.wtf 用心打造"
+    "credit": "由 tonho.wtf 用心打造",
+    "fork_title": "社群 Fork",
+    "fork_desc": "由 {{user}} 維護,改自 {{author}} 的原始專案。",
+    "fork_view": "查看 Fork",
+    "original_view": "原始專案",
+    "fork_by": "Fork 維護"
   },
   "marketplace": {
     "title": "外掛市集",

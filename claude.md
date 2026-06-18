@@ -1,39 +1,117 @@
+# CLAUDE.md
+
+This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
+
 # OmniGet
 
-Desktop download manager built with Tauri 2.0 (Rust backend) + SvelteKit (frontend). Modern design principles (2025-2026): clarity over features, immediate feedback, and universal accessibility. Monorepo: `src-tauri/` is Rust, `src/` is SvelteKit + TypeScript. Run `cargo tauri dev` to start.
+Desktop download manager built with Tauri 2.0 (Rust backend) + SvelteKit (frontend). Modern design principles (2025-2026): clarity over features, immediate feedback, and universal accessibility. Monorepo: `src-tauri/` is Rust (a Cargo **workspace**), `src/` is SvelteKit + TypeScript. Run `cargo tauri dev` to start.
 
 ## Commands
 ```bash
-pnpm install          # install frontend deps
-pnpm dev              # SvelteKit dev server only
-cargo tauri dev       # full app (Rust + frontend)
-cargo check           # typecheck Rust without building
-pnpm check            # svelte-check + tsc
+# Frontend (pnpm@10.29.3 — package manager pinned in package.json)
+pnpm install                              # install frontend deps
+pnpm dev                                  # SvelteKit/Vite dev server only (http://localhost:1420)
+pnpm check                                # svelte-kit sync + svelte-check (type check — see note below)
+pnpm test                                 # Vitest run once (tests at src/lib/*.test.ts)
+pnpm test:watch                           # Vitest watch mode
+pnpm test -- src/lib/nav-config.test.ts   # run a single test file
+
+# Full app (Rust + frontend window)
+cargo tauri dev                           # or: pnpm tauri dev
+cargo tauri build                         # or: pnpm tauri build  (release bundle)
+
+# Rust — run inside src-tauri/
+cargo check                               # typecheck without building
+cargo test --workspace                    # all crates (omniget, omniget-core, omniget-plugin-sdk)
+cargo test <name>                         # single test by name filter
+cargo fmt --all
+cargo clippy --workspace --all-targets
+
+# Tooling scripts
+pnpm generate:i18n-keys                   # regenerate src/lib/i18n/keys.ts from en.json
+pnpm sync:locales                         # scripts/sync-locales.mjs (sync keys across locale files)
+pnpm version:set <patch|minor|major|X.Y.Z> # bumps package.json + src-tauri/Cargo.toml together
 ```
+
+**No JS linter is configured** — `pnpm check` (svelte-check) is the only frontend static check; there is no eslint/prettier.
+
+**Pre-PR checklist** (mirrors CI in `.github/workflows/release.yml`): from `src-tauri/` run `cargo fmt --all`, `cargo clippy --workspace --all-targets`, `cargo test --workspace`; from the root run `pnpm check`.
 
 ## Tech Stack
 
-- **Backend:** Rust, Tauri 2.x, tokio, reqwest, serde, sqlx (SQLite), chromiumoxide
+- **Backend:** Rust, Tauri 2.x, tokio, reqwest, serde, `rusqlite` (bundled SQLite, download history), `tauri-plugin-store` (settings JSON), `libloading` (dynamic plugins), `librqbit` (torrents)
 - **Frontend:** SvelteKit 2, Svelte 5 (runes: `$state`, `$derived`, `$effect`, `$props`), TypeScript strict
 - **Styling:** Scoped CSS with CSS custom properties. NO Tailwind. NO CSS-in-JS.
 - **Icons:** `@tabler/icons-svelte` — import individually: `import IconDownload from "@tabler/icons-svelte/IconDownload.svelte"`
 - **Fonts:** System fonts as default; IBM Plex Mono for code and technical content only
-- **i18n:** `sveltekit-i18n` with JSON locale files in `i18n/{lang}/`
-- **Bundler:** Vite 5, adapter-static, pnpm as package manager
+- **i18n:** `sveltekit-i18n` — one flat JSON file per locale at `src/lib/i18n/{lang}.json`
+- **Bundler:** Vite, adapter-static, pnpm as package manager
 
 ## Project Layout
-src-tauri/src/
-commands/       # Tauri IPC commands (invoked from frontend)
-platforms/      # Download platform implementations (trait-based plugin system)
-traits.rs     # PlatformDownloader trait — all platforms implement this
-hotmart/      # Hotmart-specific: auth, api, parser, downloader
-core/           # Shared engine: registry, hls_downloader, media_processor, queue
-models/         # Data structs: media.rs, download.rs, settings.rs
-storage/        # Persistence: config, database (SQLite), cache
-src/
-routes/         # SvelteKit file-based routing (+page.svelte, +layout.svelte)
-components/     # Reusable UI, organized by domain (see Component Organization)
-lib/            # Shared logic: stores/, i18n/
+
+`src-tauri/` is a Cargo **workspace** with 3 members: the root `omniget` app, `omniget-core`, and `omniget-plugin-sdk`.
+
+```
+src-tauri/
+  Cargo.toml              # workspace: members = [".", "omniget-core", "omniget-plugin-sdk"]
+  src/                    # root crate — the Tauri app
+    lib.rs                # app bootstrap: builds AppState, registers all platforms into the registry, wires commands
+    commands/             # Tauri IPC commands invoked from the frontend (downloads, settings, plugins, p2p, ai, …)
+    platforms/            # built-in PlatformDownloader impls: youtube, tiktok, instagram, twitter, twitch,
+                          #   bilibili, douyin, reddit, pinterest, vimeo, bluesky, magnet, p2p, gallerydl,
+                          #   generic_ytdlp, direct_file  (each in its own folder)
+    core/                 # download engine: queue.rs (scheduler), queue_history.rs (SQLite)
+    storage/              # config.rs — settings persistence via tauri-plugin-store
+    plugin_loader.rs      # dynamic plugin loading (libloading); plugin_host.rs — host callbacks for plugins
+  omniget-core/src/
+    platforms/traits.rs   # PlatformDownloader trait — all platforms implement this
+    core/registry.rs      # PlatformRegistry — routes a URL to the first platform that can_handle() it
+  omniget-plugin-sdk/     # stable ABI shared between the app and dynamically-loaded plugins
+src/                      # SvelteKit frontend
+  routes/                 # file-based routing (+page.svelte, +layout.svelte)
+  components/             # reusable UI, organized by domain (see Component Organization)
+  lib/                    # shared logic: stores/, i18n/
+```
+
+## Backend Architecture
+
+The big picture spans multiple files — read these together before changing download behavior.
+
+### Trait-based platform plugins
+
+Every download source implements the async `PlatformDownloader` trait (`src-tauri/omniget-core/src/platforms/traits.rs`):
+- `can_handle(url) -> bool` — URL routing
+- `get_media_info()` — fetch formats/quality metadata
+- `download(info, opts, tx)` — run the download, streaming `ProgressUpdate` over an `mpsc::Sender`
+
+`PlatformRegistry` (`src-tauri/omniget-core/src/core/registry.rs`) holds `Vec<Arc<dyn PlatformDownloader>>`; `find_platform(url)` returns the first handler whose `can_handle()` matches. All built-in platforms are registered in `src-tauri/src/lib.rs`. To add a platform: implement the trait under `src-tauri/src/platforms/<name>/` and register it in `lib.rs`.
+
+### Download engine flow
+
+`src-tauri/src/core/queue.rs` is the scheduler (max ~2 concurrent, configurable). Flow: a command enqueues → a `spawn_download` task calls `downloader.download()` → a forwarder task reads the `ProgressUpdate` channel, throttles (~250 ms), clamps progress so it never goes backward, and emits the `queue-item-progress` Tauri event.
+
+**Sentinel percents drive the UI phase labels** (the "Phase Indicators" the Design section references): negative percent = pre-download phase — `< -1.5` → connecting, `< -0.5` → starting; `>= 99.5` → finalizing. yt-dlp-backed platforms shell out to the `yt-dlp` binary and parse its progress into the same channel.
+
+### Rust ↔ Svelte IPC contract
+
+This is the seam between backend and frontend — keep both sides in sync when changing it:
+- **Events emitted** by Rust, consumed in `src/lib/stores/download-listener.ts`: `queue-state-update` (full queue, throttled), `queue-item-progress` (per-item), `media-info-preview` (URL preview), `download-log-update`, `plugins-changed`, `plugin-toast`, plus course/convert/telegram events.
+- **Commands** (`invoke()` from the frontend) are defined under `src-tauri/src/commands/*.rs` — e.g. `download_from_url`, `prefetch_media_info`, `get_settings`/`update_settings`, `list_plugins`, `set_plugin_enabled`.
+
+### Storage
+
+- **Download history:** SQLite via `rusqlite` (`src-tauri/src/core/queue_history.rs`) — ~200-row cap with auto-prune.
+- **Settings:** JSON via `tauri-plugin-store` (`src-tauri/src/storage/config.rs`), NOT SQLite. The frontend sends only changed keys; the backend merges with persisted state (see State Management → Settings Store).
+
+## Plugin System (Hot-Load)
+
+OmniGet loads native plugins at runtime — no app restart required (added in #147/#149).
+
+- **Mechanism:** plugins are native libraries (`.dylib`/`.so`) loaded via `libloading` (`src-tauri/src/plugin_loader.rs`) against the stable ABI in `omniget-plugin-sdk` (compatibility checked via `ABI_VERSION`).
+- **Layout:** each plugin lives in `~/.omniget/plugins/{plugin_id}/` with a `plugin.json` manifest (declares nav routes, i18n keys, capabilities) plus its binary and frontend/i18n assets.
+- **Hot-reload:** `set_plugin_enabled` → `PluginManager::load_one()` loads/unloads in place, then emits `plugins-changed` so `src/routes/+layout.svelte` rebuilds nav via `list_plugins`.
+- **Host callbacks:** plugins call back through the `PluginHost` trait (`src-tauri/src/plugin_host.rs`) to emit events, show toasts, access cookies, resolve tool paths, and forward download logs.
+- **Marketplace:** plugins are fetched from GitHub releases (platform-specific archives); install/update commands live in `src-tauri/src/commands/plugins.rs`, UI at `src/routes/marketplace/`.
 
 ## Design System
 
@@ -241,7 +319,9 @@ Expressive creature reacting to download state (idle → downloading → paused 
 
 ## i18n
 
-Lazy per route. `i18n/{lang}/{namespace}.json`. `$t("namespace.key")`. Default: `en`. All visible strings via `$t()`.
+`sveltekit-i18n`, configured in `src/lib/i18n/index.ts`. One **flat** JSON file per locale at `src/lib/i18n/{lang}.json` (e.g. `en.json`, `zh-TW.json`) — loaders use `key: ""` (a single flat namespace), so keys are `$t("section.key")` against that one file, not separate namespace files. Lazy-loaded per route via `loadTranslations(lang, pathname)` in `+layout.ts`. Default/fallback: `en`. Locales: `en, ru, el, pt, zh, zh-TW, ja, it, fr, es`. All visible strings via `$t()`.
+
+After editing `en.json`, run `pnpm generate:i18n-keys` to regenerate the typed key list (`src/lib/i18n/keys.ts`); use `pnpm sync:locales` to propagate keys across the other locale files.
 
 ## Coding Rules
 

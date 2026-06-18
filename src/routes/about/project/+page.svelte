@@ -1,170 +1,181 @@
 <script lang="ts">
-  import { open } from "@tauri-apps/plugin-shell";
-  import { t } from "$lib/i18n";
+    import { open } from "@tauri-apps/plugin-shell";
+    import { t } from "$lib/i18n";
 
-  const GITHUB_URL = "https://github.com/tonhowtf/omniget";
-  const APP_VERSION = "0.7.0";
+    const ORIGINAL_AUTHOR = "tonhowtf";
+    const FORK_USER = "chrisw1005";
+    const LINKS = {
+        original: "https://github.com/tonhowtf/omniget",
+        fork: "https://github.com/chrisw1005/omniget",
+    };
 
-  async function openGitHub() {
-    await open(GITHUB_URL);
-  }
+    const FEATURES = [
+        "platforms",
+        "hotmart",
+        "progress",
+        "mascot",
+        "themes",
+        "i18n",
+        "tech",
+    ] as const;
+
+    function ext(e: Event, url: string) {
+        e.preventDefault();
+        open(url).catch(() => {});
+    }
 </script>
 
-<section class="star-section">
-  <p class="star-description">{$t('about.star_description')}</p>
-  <div class="star-iframe-wrapper">
-    <iframe
-      src="https://ghbtns.com/github-btn.html?user=tonhowtf&repo=omniget&type=star&count=true&size=large"
-      frameborder="0"
-      scrolling="0"
-      width="170"
-      height="30"
-      title="GitHub Stars"
-    ></iframe>
-  </div>
-  <button class="star-button" onclick={openGitHub}>
-    <svg viewBox="0 0 24 24" width="20" height="20" fill="currentColor" stroke="none">
-      <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z" />
-    </svg>
-    {$t('about.star_button')}
-  </button>
-</section>
+<div class="project">
+    <header class="project-hero">
+        <img src="/loop.png" alt="Loop, the OmniGet mascot" class="project-logo" width="64" height="64" draggable="false" />
+        <p class="project-desc">{$t("about.description")}</p>
+    </header>
 
-<section class="project-header">
-  <img src="/loop.png" alt="Loop" class="project-logo" width="64" height="64" />
-  <p class="project-description">{$t('about.description')}</p>
-</section>
+    <section class="feat-card">
+        <h2 class="feat-title">{$t("about.features_title")}</h2>
+        <ul class="feat-list">
+            {#each FEATURES as key}
+                <li>
+                    <span class="feat-dot" aria-hidden="true"></span>
+                    <span>{$t(`about.feature_${key}`)}</span>
+                </li>
+            {/each}
+        </ul>
+    </section>
 
-<section class="card">
-  <h5 class="card-title">{$t('about.features_title')}</h5>
-  <div class="features-list">
-    <p class="feature-item">{$t('about.feature_platforms')}</p>
-    <p class="feature-item">{$t('about.feature_hotmart')}</p>
-    <p class="feature-item">{$t('about.feature_progress')}</p>
-    <p class="feature-item">{$t('about.feature_mascot')}</p>
-    <p class="feature-item">{$t('about.feature_themes')}</p>
-    <p class="feature-item">{$t('about.feature_i18n')}</p>
-    <p class="feature-item">{$t('about.feature_tech')}</p>
-  </div>
-</section>
-
-<p class="version">{$t('about.version')} {APP_VERSION}</p>
+    <footer class="project-credits">
+        <a href={LINKS.original} class="credit-repo" onclick={(e) => ext(e, LINKS.original)}>
+            <span class="credit-label">{$t("about.original_view")}</span>
+            <span class="credit-handle">{ORIGINAL_AUTHOR}/omniget</span>
+        </a>
+        <a href={LINKS.fork} class="credit-repo" onclick={(e) => ext(e, LINKS.fork)}>
+            <span class="credit-label">{$t("about.fork_title")}</span>
+            <span class="credit-handle">{FORK_USER}/omniget</span>
+        </a>
+    </footer>
+</div>
 
 <style>
-  .star-section {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    gap: var(--padding);
-    width: 100%;
-  }
-
-  .star-description {
-    font-size: 14.5px;
-    font-weight: 500;
-    color: var(--secondary);
-  }
-
-  .star-iframe-wrapper {
-    display: flex;
-    justify-content: center;
-  }
-
-  .star-button {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    gap: calc(var(--padding) / 2);
-    width: 100%;
-    padding: calc(var(--padding) + 2px) calc(var(--padding) * 2);
-    font-size: 14.5px;
-    font-weight: 500;
-    color: #fff;
-    background: var(--orange);
-    border: none;
-    border-radius: var(--border-radius);
-    cursor: pointer;
-    transition: transform 0.15s;
-  }
-
-  .star-button svg {
-    pointer-events: none;
-    flex-shrink: 0;
-  }
-
-  @media (hover: hover) {
-    .star-button:hover {
-      transform: scale(1.05);
+    .project {
+        display: flex;
+        flex-direction: column;
+        gap: var(--space-5);
     }
-  }
 
-  .star-button:active {
-    transform: scale(0.98);
-  }
+    .project-hero {
+        display: flex;
+        align-items: center;
+        gap: var(--space-4);
+    }
 
-  .star-button:focus-visible {
-    outline: var(--focus-ring);
-    outline-offset: var(--focus-ring-offset);
-  }
+    .project-logo {
+        width: 64px;
+        height: 64px;
+        border-radius: var(--radius-lg);
+        box-shadow: var(--elev-1);
+        flex-shrink: 0;
+    }
 
-  .project-header {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    gap: calc(var(--padding) / 2);
-    text-align: center;
-  }
+    .project-desc {
+        font-size: var(--text-sm);
+        line-height: 1.6;
+        color: var(--text-muted);
+        margin: 0;
+        max-width: 46ch;
+        text-wrap: pretty;
+    }
 
-  .project-logo {
-    border-radius: calc(var(--border-radius) + 4px);
-    pointer-events: none;
-  }
+    .feat-card {
+        background: var(--surface);
+        border: 1px solid var(--border);
+        border-radius: var(--radius-md);
+        padding: var(--space-5);
+        display: flex;
+        flex-direction: column;
+        gap: var(--space-3);
+    }
 
-  .project-description {
-    font-size: 14.5px;
-    font-weight: 400;
-    line-height: 1.8;
-    color: var(--gray);
-    max-width: 320px;
-  }
+    .feat-title {
+        font-size: var(--text-md);
+        font-weight: 600;
+        color: var(--text);
+        letter-spacing: -0.01em;
+        margin: 0;
+    }
 
-  .card {
-    width: 100%;
-    background: var(--button);
-    box-shadow: var(--button-box-shadow);
-    border-radius: var(--border-radius);
-    padding: calc(var(--padding) + 4px);
-    display: flex;
-    flex-direction: column;
-    gap: calc(var(--padding) / 2);
-  }
+    .feat-list {
+        display: flex;
+        flex-direction: column;
+        gap: var(--space-2);
+        list-style: none;
+        margin: 0;
+        padding: 0;
+    }
 
-  .card-title {
-    color: var(--secondary);
-  }
+    .feat-list li {
+        display: flex;
+        align-items: baseline;
+        gap: var(--space-3);
+        font-size: var(--text-sm);
+        line-height: 1.55;
+        color: var(--text-muted);
+    }
 
-  .features-list {
-    display: flex;
-    flex-direction: column;
-    gap: 6px;
-  }
+    .feat-dot {
+        flex-shrink: 0;
+        width: 6px;
+        height: 6px;
+        margin-top: 1px;
+        border-radius: var(--radius-full);
+        background: var(--accent);
+        transform: translateY(-1px);
+    }
 
-  .feature-item {
-    font-size: 13px;
-    font-weight: 400;
-    line-height: 1.6;
-    color: var(--gray);
-  }
+    .project-credits {
+        display: grid;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: var(--space-3);
+    }
 
-  .feature-item::before {
-    content: "• ";
-    color: var(--blue);
-  }
+    .credit-repo {
+        display: flex;
+        flex-direction: column;
+        gap: 2px;
+        padding: var(--space-3) var(--space-4);
+        background: var(--surface);
+        border: 1px solid var(--border);
+        border-radius: var(--radius-sm);
+        text-decoration: none;
+        transition: border-color var(--duration-fast) var(--ease-out), background var(--duration-fast) var(--ease-out);
+    }
 
-  .version {
-    font-size: 12.5px;
-    font-weight: 500;
-    color: var(--gray);
-    text-align: center;
-  }
+    @media (hover: hover) {
+        .credit-repo:hover {
+            background: var(--surface-hi);
+            border-color: color-mix(in srgb, var(--accent) 25%, var(--border));
+        }
+    }
+
+    .credit-repo:focus-visible {
+        outline: 2px solid var(--accent);
+        outline-offset: 2px;
+    }
+
+    .credit-label {
+        font-size: var(--text-xs);
+        color: var(--text-dim);
+    }
+
+    .credit-handle {
+        font-family: var(--font-mono);
+        font-size: var(--text-xs);
+        font-weight: 600;
+        color: var(--text);
+    }
+
+    @media (max-width: 520px) {
+        .project-credits {
+            grid-template-columns: 1fr;
+        }
+    }
 </style>

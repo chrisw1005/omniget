@@ -960,12 +960,19 @@
   },
   "about": {
     "tab": {
+      "overview": "overview",
       "terms": "terms",
       "project": "project",
       "roadmap": "roadmap",
       "changelog": "changelog",
       "debug": "debug info"
     },
+    "card_changelog_title": "Changelog",
+    "card_changelog_desc": "What's new in each release.",
+    "card_project_title": "The project",
+    "card_project_desc": "Features, tech stack, and credits.",
+    "card_terms_title": "Terms of use",
+    "card_terms_desc": "Use OmniGet responsibly.",
     "debug": {
       "title": "Debug info",
       "description": "Environment details to paste in a bug report. Does not include any secrets.",
@@ -1006,7 +1013,12 @@
     "roadmap_community_discord": "reach out on discord:",
     "roadmap_community_issue": "or open an issue on the repository:",
     "tagline": "Download anything, from anywhere.",
-    "credit": "Made with love by tonho.wtf"
+    "credit": "Made with love by tonho.wtf",
+    "fork_title": "Community fork",
+    "fork_desc": "Maintained by {{user}}, based on the original project by {{author}}.",
+    "fork_view": "View fork",
+    "original_view": "Original",
+    "fork_by": "Fork by"
   },
   "marketplace": {
     "title": "Marketplace",

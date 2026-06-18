@@ -960,6 +960,7 @@
   },
   "about": {
     "tab": {
+      "overview": "επισκόπηση",
       "terms": "όροι",
       "project": "σχέδιο",
       "roadmap": "πλάνο",
@@ -1006,7 +1007,18 @@
     "roadmap_community_discord": "βρείτε μας στο discord:",
     "roadmap_community_issue": "ή ανοίξτε ένα θέμα (issue) στο αποθετήριο:",
     "tagline": "Κατεβάστε οτιδήποτε, από οπουδήποτε.",
-    "credit": "Φτιαγμένο με αγάπη από tonho.wtf"
+    "credit": "Φτιαγμένο με αγάπη από tonho.wtf",
+    "fork_title": "Fork της κοινότητας",
+    "fork_desc": "Συντηρείται από τον {{user}}, βασισμένο στο πρωτότυπο έργο του {{author}}.",
+    "fork_view": "Προβολή fork",
+    "original_view": "Πρωτότυπο",
+    "fork_by": "Fork από",
+    "card_changelog_title": "Αρχείο αλλαγών",
+    "card_changelog_desc": "Τι νέο υπάρχει σε κάθε έκδοση.",
+    "card_project_title": "Το έργο",
+    "card_project_desc": "Λειτουργίες, τεχνολογία και συντελεστές.",
+    "card_terms_title": "Όροι χρήσης",
+    "card_terms_desc": "Χρησιμοποιήστε το OmniGet υπεύθυνα."
   },
   "marketplace": {
     "title": "Marketplace",

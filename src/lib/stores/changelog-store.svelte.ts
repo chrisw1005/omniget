@@ -1,5 +1,7 @@
 import { getVersion } from "@tauri-apps/api/app";
+import { get } from "svelte/store";
 import { localReleaseNotes } from "$lib/release-notes";
+import { locale } from "$lib/i18n";
 
 const STORAGE_KEY = "omniget_last_seen_version";
 const CHANGELOG_BODY_KEY = "omniget_pending_changelog";
@@ -68,14 +70,15 @@ export async function initChangelog(): Promise<void> {
 }
 
 export async function fetchChangelog(): Promise<string> {
-  if (changelogBody) return changelogBody;
-
-  // Bundled fork release notes take priority (works offline, no published release needed).
-  const local = localReleaseNotes(currentVersion);
+  // Bundled fork release notes (locale-aware) take priority: works offline, no
+  // published release needed, and re-evaluates so it follows the app language.
+  const local = localReleaseNotes(currentVersion, get(locale) || "en");
   if (local) {
     changelogBody = local;
     return local;
   }
+
+  if (changelogBody) return changelogBody;
 
   try {
     const res = await fetch(

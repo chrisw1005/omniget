@@ -28,7 +28,9 @@ function hydrate(): LinkGrabberItem[] {
 
 let items = $state<LinkGrabberItem[]>(hydrate());
 
-function persist() {
+/** Persist the current list. Exported so rows can save after two-way bindings
+ * (e.g. QualityPicker) mutate an item in place. */
+export function persist() {
   if (typeof localStorage === "undefined") return;
   localStorage.setItem(STORAGE_KEY, serializeItems(items));
 }

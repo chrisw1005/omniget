@@ -3752,6 +3752,9 @@
     "embed_metadata": "嵌入元数据",
     "meta_title": "标题",
     "meta_artist": "艺人",
-    "meta_album": "专辑"
+    "meta_album": "专辑",
+    "audio_format": "音频格式",
+    "audio_quality": "音质",
+    "auto": "自动"
   }
 }

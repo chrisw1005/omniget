@@ -3752,6 +3752,9 @@
     "embed_metadata": "嵌入 metadata",
     "meta_title": "標題",
     "meta_artist": "演出者",
-    "meta_album": "專輯"
+    "meta_album": "專輯",
+    "audio_format": "音訊格式",
+    "audio_quality": "音質",
+    "auto": "自動"
   }
 }

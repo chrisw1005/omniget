@@ -3752,6 +3752,9 @@
     "embed_metadata": "Embed metadata",
     "meta_title": "Title",
     "meta_artist": "Artist",
-    "meta_album": "Album"
+    "meta_album": "Album",
+    "audio_format": "Audio format",
+    "audio_quality": "Audio quality",
+    "auto": "Auto"
   }
 }

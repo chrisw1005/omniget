@@ -3752,6 +3752,9 @@
     "embed_metadata": "Встроить метаданные",
     "meta_title": "Название",
     "meta_artist": "Исполнитель",
-    "meta_album": "Альбом"
+    "meta_album": "Альбом",
+    "audio_format": "Формат аудио",
+    "audio_quality": "Качество аудио",
+    "auto": "Авто"
   }
 }

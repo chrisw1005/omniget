@@ -3752,6 +3752,9 @@
     "embed_metadata": "メタデータを埋め込む",
     "meta_title": "タイトル",
     "meta_artist": "アーティスト",
-    "meta_album": "アルバム"
+    "meta_album": "アルバム",
+    "audio_format": "音声形式",
+    "audio_quality": "音質",
+    "auto": "自動"
   }
 }

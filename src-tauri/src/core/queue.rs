@@ -1135,7 +1135,10 @@ async fn spawn_download_inner(
         } else if proxy.host.trim().is_empty() {
             "enabled but host is empty; direct connection enforced".to_string()
         } else {
-            format!("enabled; {}://{}:{}", proxy.proxy_type, proxy.host, proxy.port)
+            format!(
+                "enabled; {}://{}:{}",
+                proxy.proxy_type, proxy.host, proxy.port
+            )
         };
         append_download_log(
             &app,
@@ -1197,12 +1200,8 @@ async fn spawn_download_inner(
                 },
             );
 
-            let info_future = fetch_and_cache_info(
-                &url,
-                &*downloader,
-                &platform_name,
-                ytdlp_path.as_deref(),
-            );
+            let info_future =
+                fetch_and_cache_info(&url, &*downloader, &platform_name, ytdlp_path.as_deref());
             let scoped_info_future = omniget_core::core::log_hook::CURRENT_COOKIE_SLUG.scope(
                 cookie_slug.clone(),
                 omniget_core::core::log_hook::CURRENT_DOWNLOAD_ID.scope(item_id, info_future),

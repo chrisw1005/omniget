@@ -110,7 +110,10 @@ fn clipboard_to_linkgrabber(app: &tauri::AppHandle, mode: &str) {
             serde_json::json!({ "url": raw, "mode": mode }),
         );
     } else {
-        let _ = app.emit("linkgrabber-add-rejected", serde_json::json!({ "url": raw }));
+        let _ = app.emit(
+            "linkgrabber-add-rejected",
+            serde_json::json!({ "url": raw }),
+        );
     }
 }
 

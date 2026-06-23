@@ -206,6 +206,16 @@ pub(crate) fn resolve_embed(
     }
 }
 
+/// Build the yt-dlp output template. A non-empty `edited_title` becomes
+/// `"<title>.%(ext)s"` (with `%` escaped so the literal title is not parsed as a
+/// yt-dlp output field); otherwise the global `default_tmpl` is used.
+pub(crate) fn filename_template(edited_title: Option<&str>, default_tmpl: &str) -> String {
+    match edited_title.map(str::trim) {
+        Some(t) if !t.is_empty() => format!("{}.%(ext)s", t.replace('%', "%%")),
+        _ => default_tmpl.to_string(),
+    }
+}
+
 pub struct QueueItem {
     pub id: u64,
     pub url: String,
@@ -1352,7 +1362,12 @@ async fn spawn_download_inner(
     );
 
     let settings = config::load_settings(&app);
-    let tmpl = settings.download.filename_template.clone();
+    // A user-edited title (LinkGrabber inline edit) becomes the output filename;
+    // otherwise fall back to the global filename template.
+    let tmpl = filename_template(
+        embed_override.as_ref().and_then(|o| o.title.as_deref()),
+        &settings.download.filename_template,
+    );
     let mut final_output_dir = std::path::PathBuf::from(&output_dir);
     if settings.download.organize_by_platform {
         final_output_dir = final_output_dir.join(&platform_name);
@@ -2185,7 +2200,27 @@ mod kind_tests {
 
 #[cfg(test)]
 mod embed_tests {
-    use super::{resolve_embed, EmbedOverride};
+    use super::{filename_template, resolve_embed, EmbedOverride};
+
+    #[test]
+    fn filename_template_uses_edited_title() {
+        assert_eq!(
+            filename_template(Some("數到十"), "%(title)s [%(id)s].%(ext)s"),
+            "數到十.%(ext)s"
+        );
+    }
+
+    #[test]
+    fn filename_template_falls_back_when_blank_or_none() {
+        let def = "%(title)s [%(id)s].%(ext)s";
+        assert_eq!(filename_template(None, def), def);
+        assert_eq!(filename_template(Some("   "), def), def);
+    }
+
+    #[test]
+    fn filename_template_escapes_percent() {
+        assert_eq!(filename_template(Some("50% off"), "x"), "50%% off.%(ext)s");
+    }
 
     #[test]
     fn none_override_uses_defaults_and_auto_metadata() {

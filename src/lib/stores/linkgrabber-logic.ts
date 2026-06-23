@@ -81,18 +81,41 @@ export function serializeItems(items: LinkGrabberItem[]): string {
   return JSON.stringify(items);
 }
 
+/** Migrate a persisted item from older shapes: promote legacy nested audio
+ * metadata to the item level and fill in audio format/quality defaults. */
+function normalizeItem(x: LinkGrabberItem): LinkGrabberItem {
+  if (x.audio) {
+    const a = x.audio as LinkGrabberAudio & {
+      metaTitle?: string;
+      metaArtist?: string;
+      metaAlbum?: string;
+    };
+    if (typeof a.format !== "string") a.format = "auto";
+    if (typeof a.quality !== "string") a.quality = "";
+    if (a.metaTitle && !x.metaTitle) x.metaTitle = a.metaTitle;
+    if (a.metaArtist && !x.metaArtist) x.metaArtist = a.metaArtist;
+    if (a.metaAlbum && !x.metaAlbum) x.metaAlbum = a.metaAlbum;
+    delete a.metaTitle;
+    delete a.metaArtist;
+    delete a.metaAlbum;
+  }
+  return x;
+}
+
 /** Parse persisted items, tolerating corrupt or partial data. */
 export function deserializeItems(raw: string): LinkGrabberItem[] {
   try {
     const parsed = JSON.parse(raw);
     if (!Array.isArray(parsed)) return [];
-    return parsed.filter(
-      (x) =>
-        x &&
-        typeof x.url === "string" &&
-        typeof x.id === "string" &&
-        (x.mode === "video" || x.mode === "audio"),
-    );
+    return parsed
+      .filter(
+        (x) =>
+          x &&
+          typeof x.url === "string" &&
+          typeof x.id === "string" &&
+          (x.mode === "video" || x.mode === "audio"),
+      )
+      .map(normalizeItem);
   } catch {
     return [];
   }

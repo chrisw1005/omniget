@@ -1,5 +1,6 @@
 <script lang="ts">
   import { onMount } from "svelte";
+  import { convertFileSrc } from "@tauri-apps/api/core";
   import { slide } from "svelte/transition";
   import { cubicOut } from "svelte/easing";
   import { t } from "$lib/i18n";
@@ -41,6 +42,17 @@
 
   const displayTitle = $derived(item.metaTitle ?? item.title ?? item.url);
   const displayAuthor = $derived(item.metaArtist ?? item.author ?? "");
+
+  // Preview matches the final embedded cover: a custom upload wins over the
+  // thumbnail, and the box is squared when the audio cover shape is "square".
+  const coverSrc = $derived(
+    item.mode === "audio" && item.audio?.coverPath
+      ? convertFileSrc(item.audio.coverPath)
+      : (item.thumbnailUrl ?? null),
+  );
+  const squarePreview = $derived(
+    item.mode === "audio" && item.audio?.coverShape === "square",
+  );
 
   function setMode(mode: "video" | "audio") {
     const patch: Partial<LinkGrabberItem> = { mode };
@@ -89,13 +101,14 @@
   <div class="lg-head">
     <button
       class="thumb"
-      class:placeholder={!item.thumbnailUrl}
+      class:square={squarePreview}
+      class:placeholder={!coverSrc}
       type="button"
       onclick={() => (expanded = !expanded)}
       aria-label="toggle"
     >
-      {#if item.thumbnailUrl}
-        <img src={item.thumbnailUrl} alt="" loading="lazy" />
+      {#if coverSrc}
+        <img src={coverSrc} alt="" loading="lazy" />
       {/if}
     </button>
 
@@ -211,6 +224,10 @@
     background: var(--surface-hi, #2c2c2e);
     cursor: pointer;
     display: block;
+  }
+
+  .thumb.square {
+    aspect-ratio: 1 / 1;
   }
 
   .thumb img {

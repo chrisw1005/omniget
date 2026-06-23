@@ -194,7 +194,7 @@
 
   .lg-head {
     display: flex;
-    align-items: flex-start;
+    align-items: center;
     gap: var(--space-3, 12px);
     padding: var(--space-3, 12px);
   }

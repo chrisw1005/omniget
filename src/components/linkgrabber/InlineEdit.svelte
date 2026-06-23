@@ -72,33 +72,40 @@
 
 <style>
   .inline-display {
-    display: inline;
+    display: inline-block;
+    max-width: 100%;
+    box-sizing: border-box;
     font: inherit;
     color: inherit;
     text-align: left;
     background: none;
-    border: 1px solid transparent;
-    border-radius: var(--radius-xs, 6px);
-    margin: -2px -6px;
-    padding: 2px 6px;
+    border: none;
+    padding: 0;
+    margin: 0;
     cursor: text;
-    max-width: 100%;
+    /* one line; overflow is truncated, full text shows on click (input) */
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
   }
 
   .inline-display.empty {
     color: var(--text-dim, #636366);
   }
 
+  /* hover shows an outline "edit box" without shifting layout */
   @media (hover: hover) {
     .inline-display:hover {
-      border-color: var(--input-border, #3a3a3c);
-      background: var(--input-bg, #1c1c1e);
+      outline: 1px solid var(--input-border, #3a3a3c);
+      outline-offset: 3px;
+      border-radius: 4px;
     }
   }
 
   .inline-display:focus-visible {
     outline: 2px solid var(--accent);
-    outline-offset: 1px;
+    outline-offset: 3px;
+    border-radius: 4px;
   }
 
   .inline-input {

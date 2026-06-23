@@ -8,12 +8,8 @@
   let settings = $derived(getSettings());
 
   let hotkeyInput = $state("");
-  let hotkeyTimer: ReturnType<typeof setTimeout> | null = null;
-  let hotkeyMode = $state<"record" | "type">("record");
   let hotkeyRecording = $state(false);
   let musicHotkeyInput = $state("");
-  let musicHotkeyTimer: ReturnType<typeof setTimeout> | null = null;
-  let musicHotkeyMode = $state<"record" | "type">("record");
   let musicHotkeyRecording = $state(false);
 
   $effect(() => {
@@ -22,17 +18,6 @@
       musicHotkeyInput = settings.download.music_hotkey_binding;
     }
   });
-
-  function handleHotkeyInput(e: Event) {
-    const value = (e.target as HTMLInputElement).value;
-    hotkeyInput = value;
-    if (hotkeyTimer) clearTimeout(hotkeyTimer);
-    hotkeyTimer = setTimeout(async () => {
-      if (value.trim()) {
-        await updateSettings({ download: { hotkey_binding: value } });
-      }
-    }, 800);
-  }
 
   function mapKeyName(key: string): string | null {
     if (key.length === 1 && /[a-zA-Z]/.test(key)) return key.toUpperCase();
@@ -61,17 +46,6 @@
     hotkeyInput = value;
     hotkeyRecording = false;
     updateSettings({ download: { hotkey_binding: value } });
-  }
-
-  function handleMusicHotkeyInput(e: Event) {
-    const value = (e.target as HTMLInputElement).value;
-    musicHotkeyInput = value;
-    if (musicHotkeyTimer) clearTimeout(musicHotkeyTimer);
-    musicHotkeyTimer = setTimeout(async () => {
-      if (value.trim()) {
-        await updateSettings({ download: { music_hotkey_binding: value } });
-      }
-    }, 800);
   }
 
   function handleMusicHotkeyKeyDown(e: KeyboardEvent) {
@@ -134,17 +108,9 @@
       <div class="setting-row hotkey-row">
         <span class="setting-label">{$t('settings.download.hotkey_binding')}</span>
         <div class="hotkey-controls">
-          <div class="hotkey-mode-switch">
-            <button class="hotkey-mode-btn" class:active={hotkeyMode === 'record'} onclick={() => { hotkeyMode = 'record'; hotkeyRecording = false; }}>{$t('settings.download.hotkey_record')}</button>
-            <button class="hotkey-mode-btn" class:active={hotkeyMode === 'type'} onclick={() => { hotkeyMode = 'type'; hotkeyRecording = false; }}>{$t('settings.download.hotkey_type')}</button>
-          </div>
-          {#if hotkeyMode === 'type'}
-            <input type="text" class="input-hotkey" value={hotkeyInput} oninput={handleHotkeyInput} spellcheck="false" />
-          {:else}
-            <button class="input-hotkey hotkey-record-btn" class:recording={hotkeyRecording} onclick={() => { hotkeyRecording = true; }} onkeydown={hotkeyRecording ? handleHotkeyKeyDown : undefined} onblur={() => { hotkeyRecording = false; }}>
-              {hotkeyRecording ? $t('settings.download.hotkey_press') : (hotkeyInput || $t('settings.download.hotkey_press'))}
-            </button>
-          {/if}
+          <button class="input-hotkey hotkey-record-btn" class:recording={hotkeyRecording} onclick={() => { hotkeyRecording = true; }} onkeydown={hotkeyRecording ? handleHotkeyKeyDown : undefined} onblur={() => { hotkeyRecording = false; }}>
+            {hotkeyRecording ? $t('settings.download.hotkey_press') : (hotkeyInput || $t('settings.download.hotkey_press'))}
+          </button>
         </div>
       </div>
       <div class="divider"></div>
@@ -169,17 +135,9 @@
       <div class="setting-row hotkey-row">
         <span class="setting-label">{$t('settings.download.music_hotkey_binding')}</span>
         <div class="hotkey-controls">
-          <div class="hotkey-mode-switch">
-            <button class="hotkey-mode-btn" class:active={musicHotkeyMode === 'record'} onclick={() => { musicHotkeyMode = 'record'; musicHotkeyRecording = false; }}>{$t('settings.download.hotkey_record')}</button>
-            <button class="hotkey-mode-btn" class:active={musicHotkeyMode === 'type'} onclick={() => { musicHotkeyMode = 'type'; musicHotkeyRecording = false; }}>{$t('settings.download.hotkey_type')}</button>
-          </div>
-          {#if musicHotkeyMode === 'type'}
-            <input type="text" class="input-hotkey" value={musicHotkeyInput} oninput={handleMusicHotkeyInput} spellcheck="false" />
-          {:else}
-            <button class="input-hotkey hotkey-record-btn" class:recording={musicHotkeyRecording} onclick={() => { musicHotkeyRecording = true; }} onkeydown={musicHotkeyRecording ? handleMusicHotkeyKeyDown : undefined} onblur={() => { musicHotkeyRecording = false; }}>
-              {musicHotkeyRecording ? $t('settings.download.hotkey_press') : (musicHotkeyInput || $t('settings.download.hotkey_press'))}
-            </button>
-          {/if}
+          <button class="input-hotkey hotkey-record-btn" class:recording={musicHotkeyRecording} onclick={() => { musicHotkeyRecording = true; }} onkeydown={musicHotkeyRecording ? handleMusicHotkeyKeyDown : undefined} onblur={() => { musicHotkeyRecording = false; }}>
+            {musicHotkeyRecording ? $t('settings.download.hotkey_press') : (musicHotkeyInput || $t('settings.download.hotkey_press'))}
+          </button>
         </div>
       </div>
     {/if}

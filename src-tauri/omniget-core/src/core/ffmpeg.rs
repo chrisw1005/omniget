@@ -470,6 +470,10 @@ pub struct MetadataEmbed {
     pub year: Option<String>,
     pub comment: Option<String>,
     pub thumbnail_url: Option<String>,
+    /// Local image file to embed as cover art. When set and present on disk it
+    /// takes precedence over `thumbnail_url` and is NOT deleted afterwards
+    /// (it belongs to the user, not a temp download).
+    pub cover_path: Option<String>,
 }
 
 pub async fn embed_metadata(
@@ -491,71 +495,28 @@ pub async fn embed_metadata(
         "mp3" | "m4a" | "aac" | "ogg" | "opus" | "flac" | "wav" | "wma"
     );
 
-    let thumbnail_path = if embed_thumbnail && is_audio_only {
-        if let Some(ref url) = metadata.thumbnail_url {
-            match download_thumbnail(http_client, url, temp_dir).await {
-                Ok(p) => Some(p),
-                Err(e) => {
-                    tracing::warn!("Failed to download thumbnail: {}", e);
-                    None
-                }
-            }
-        } else {
-            None
+    // Resolve the cover image. A user-supplied local cover wins over a
+    // downloaded thumbnail. `cover_is_temp` marks files we created (and must
+    // delete); a user-supplied cover is left untouched.
+    let (cover_path, cover_is_temp) = if embed_thumbnail && is_audio_only {
+        match metadata.cover_path.as_deref() {
+            Some(p) if Path::new(p).exists() => (Some(std::path::PathBuf::from(p)), false),
+            _ => match metadata.thumbnail_url {
+                Some(ref url) => match download_thumbnail(http_client, url, temp_dir).await {
+                    Ok(p) => (Some(p), true),
+                    Err(e) => {
+                        tracing::warn!("Failed to download thumbnail: {}", e);
+                        (None, false)
+                    }
+                },
+                None => (None, false),
+            },
         }
     } else {
-        None
+        (None, false)
     };
 
-    let mut args: Vec<String> = vec![
-        "-y".to_string(),
-        "-i".to_string(),
-        file.to_string_lossy().to_string(),
-    ];
-
-    if let Some(ref thumb) = thumbnail_path {
-        args.extend(["-i".to_string(), thumb.to_string_lossy().to_string()]);
-    }
-
-    if let Some(ref thumb) = thumbnail_path {
-        let _ = thumb;
-        args.extend([
-            "-map".to_string(),
-            "0:a".to_string(),
-            "-map".to_string(),
-            "1:v".to_string(),
-            "-c".to_string(),
-            "copy".to_string(),
-            "-disposition:v:0".to_string(),
-            "attached_pic".to_string(),
-        ]);
-    } else {
-        args.extend(["-c".to_string(), "copy".to_string()]);
-    }
-
-    if let Some(ref v) = metadata.title {
-        args.extend(["-metadata".to_string(), format!("title={}", v)]);
-    }
-    if let Some(ref v) = metadata.artist {
-        args.extend(["-metadata".to_string(), format!("artist={}", v)]);
-    }
-    if let Some(ref v) = metadata.album {
-        args.extend(["-metadata".to_string(), format!("album={}", v)]);
-    }
-    if let Some(ref v) = metadata.track_number {
-        args.extend(["-metadata".to_string(), format!("track={}", v)]);
-    }
-    if let Some(ref v) = metadata.genre {
-        args.extend(["-metadata".to_string(), format!("genre={}", v)]);
-    }
-    if let Some(ref v) = metadata.year {
-        args.extend(["-metadata".to_string(), format!("date={}", v)]);
-    }
-    if let Some(ref v) = metadata.comment {
-        args.extend(["-metadata".to_string(), format!("comment={}", v)]);
-    }
-
-    args.push(temp_output.to_string_lossy().to_string());
+    let args = build_embed_args(file, metadata, cover_path.as_deref(), &temp_output);
 
     let output = crate::core::process::command("ffmpeg")
         .args(&args)
@@ -565,8 +526,10 @@ pub async fn embed_metadata(
         .await
         .map_err(|e| anyhow!("Failed to run ffmpeg: {}", e))?;
 
-    if let Some(ref thumb) = thumbnail_path {
-        let _ = std::fs::remove_file(thumb);
+    if let Some(ref cover) = cover_path {
+        if cover_is_temp {
+            let _ = std::fs::remove_file(cover);
+        }
     }
 
     if !output.status.success() {
@@ -603,6 +566,64 @@ pub async fn embed_metadata(
     }
 
     Ok(())
+}
+
+/// Build the ffmpeg argument list for a metadata/cover embed pass. Pure so it
+/// can be unit-tested without invoking ffmpeg. `cover` is the resolved
+/// attached-picture image already on disk (user cover or downloaded thumbnail);
+/// `output` is the temp destination.
+fn build_embed_args(
+    input: &Path,
+    metadata: &MetadataEmbed,
+    cover: Option<&Path>,
+    output: &Path,
+) -> Vec<String> {
+    let mut args: Vec<String> = vec![
+        "-y".to_string(),
+        "-i".to_string(),
+        input.to_string_lossy().to_string(),
+    ];
+
+    if let Some(cover) = cover {
+        args.extend(["-i".to_string(), cover.to_string_lossy().to_string()]);
+        args.extend([
+            "-map".to_string(),
+            "0:a".to_string(),
+            "-map".to_string(),
+            "1:v".to_string(),
+            "-c".to_string(),
+            "copy".to_string(),
+            "-disposition:v:0".to_string(),
+            "attached_pic".to_string(),
+        ]);
+    } else {
+        args.extend(["-c".to_string(), "copy".to_string()]);
+    }
+
+    if let Some(ref v) = metadata.title {
+        args.extend(["-metadata".to_string(), format!("title={}", v)]);
+    }
+    if let Some(ref v) = metadata.artist {
+        args.extend(["-metadata".to_string(), format!("artist={}", v)]);
+    }
+    if let Some(ref v) = metadata.album {
+        args.extend(["-metadata".to_string(), format!("album={}", v)]);
+    }
+    if let Some(ref v) = metadata.track_number {
+        args.extend(["-metadata".to_string(), format!("track={}", v)]);
+    }
+    if let Some(ref v) = metadata.genre {
+        args.extend(["-metadata".to_string(), format!("genre={}", v)]);
+    }
+    if let Some(ref v) = metadata.year {
+        args.extend(["-metadata".to_string(), format!("date={}", v)]);
+    }
+    if let Some(ref v) = metadata.comment {
+        args.extend(["-metadata".to_string(), format!("comment={}", v)]);
+    }
+
+    args.push(output.to_string_lossy().to_string());
+    args
 }
 
 async fn download_thumbnail(
@@ -674,4 +695,47 @@ fn parse_out_time_us(line: &str) -> Option<u64> {
         return val.trim().parse::<u64>().ok().map(|ms| ms * 1000);
     }
     None
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn build_embed_args_uses_cover_and_metadata() {
+        let meta = MetadataEmbed {
+            title: Some("Song".into()),
+            artist: Some("Artist".into()),
+            album: Some("Album".into()),
+            ..Default::default()
+        };
+        let args = build_embed_args(
+            Path::new("/tmp/in.m4a"),
+            &meta,
+            Some(Path::new("/tmp/cover.jpg")),
+            Path::new("/tmp/out.m4a"),
+        );
+        assert!(args
+            .windows(2)
+            .any(|w| w[0] == "-i" && w[1] == "/tmp/cover.jpg"));
+        assert!(args.iter().any(|a| a == "attached_pic"));
+        assert!(args.iter().any(|a| a == "title=Song"));
+        assert!(args.iter().any(|a| a == "artist=Artist"));
+        assert!(args.iter().any(|a| a == "album=Album"));
+        assert_eq!(args.last().unwrap(), "/tmp/out.m4a");
+    }
+
+    #[test]
+    fn build_embed_args_without_cover_copies_streams() {
+        let meta = MetadataEmbed::default();
+        let args = build_embed_args(
+            Path::new("/tmp/in.mp4"),
+            &meta,
+            None,
+            Path::new("/tmp/out.mp4"),
+        );
+        assert!(!args.iter().any(|a| a == "attached_pic"));
+        assert!(args.windows(2).any(|w| w[0] == "-c" && w[1] == "copy"));
+        assert_eq!(args.iter().filter(|a| *a == "-i").count(), 1);
+    }
 }

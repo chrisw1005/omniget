@@ -10,9 +10,8 @@ export interface LinkGrabberAudio {
   embedThumbnail: boolean;
   embedMetadata: boolean;
   coverPath?: string | null;
-  metaTitle?: string;
-  metaArtist?: string;
-  metaAlbum?: string;
+  format: string; // "auto" | "m4a" | "mp3" | "flac" | "opus" | "wav"
+  quality: string; // "" = auto | "128" | "192" | "256" | "320" (kbps)
 }
 
 export interface LinkGrabberItem {
@@ -28,6 +27,10 @@ export interface LinkGrabberItem {
   formatError?: string;
   selectedQuality: string;
   selectedFormatId: string | null;
+  // Editable metadata overrides (inline-edited on the header; embedded for audio).
+  metaTitle?: string;
+  metaArtist?: string;
+  metaAlbum?: string;
   audio?: LinkGrabberAudio;
   addedAt: number;
 }
@@ -58,7 +61,13 @@ export function createItem(
     addedAt: now,
   };
   if (mode === "audio") {
-    item.audio = { embedThumbnail: true, embedMetadata: true, coverPath: null };
+    item.audio = {
+      embedThumbnail: true,
+      embedMetadata: true,
+      coverPath: null,
+      format: "auto",
+      quality: "",
+    };
   }
   return item;
 }

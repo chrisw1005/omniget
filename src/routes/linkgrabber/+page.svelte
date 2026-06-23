@@ -59,9 +59,12 @@
         embedThumbnail: item.audio?.embedThumbnail ?? null,
         embedMetadata: item.audio?.embedMetadata ?? null,
         coverPath: item.audio?.coverPath ?? null,
-        metaTitle: item.audio?.metaTitle || null,
-        metaArtist: item.audio?.metaArtist || null,
-        metaAlbum: item.audio?.metaAlbum || null,
+        metaTitle: item.metaTitle || null,
+        metaArtist: item.metaArtist || null,
+        metaAlbum: item.metaAlbum || null,
+        audioFormat:
+          item.audio && item.audio.format !== "auto" ? item.audio.format : null,
+        audioQuality: item.audio?.quality || null,
       });
       removeItem(item.id);
       return true;

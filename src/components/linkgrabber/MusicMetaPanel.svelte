@@ -4,12 +4,13 @@
 
   type Props = {
     audio: LinkGrabberAudio;
-    defaultTitle?: string;
-    defaultArtist?: string;
     onChange: (patch: Partial<LinkGrabberAudio>) => void;
   };
 
-  let { audio, defaultTitle = "", defaultArtist = "", onChange }: Props = $props();
+  let { audio, onChange }: Props = $props();
+
+  const FORMATS = ["m4a", "mp3", "flac", "opus", "wav"] as const;
+  const BITRATES = ["128", "192", "256", "320"] as const;
 
   async function pickCover() {
     try {
@@ -32,6 +33,35 @@
 </script>
 
 <div class="music-meta">
+  <div class="selects">
+    <label class="sel">
+      <span class="sel-label">{$t("linkgrabber.audio_format")}</span>
+      <select
+        class="sel-ctrl"
+        value={audio.format}
+        onchange={(e) => onChange({ format: e.currentTarget.value })}
+      >
+        <option value="auto">{$t("linkgrabber.auto")}</option>
+        {#each FORMATS as f}
+          <option value={f}>{f.toUpperCase()}</option>
+        {/each}
+      </select>
+    </label>
+    <label class="sel">
+      <span class="sel-label">{$t("linkgrabber.audio_quality")}</span>
+      <select
+        class="sel-ctrl"
+        value={audio.quality}
+        onchange={(e) => onChange({ quality: e.currentTarget.value })}
+      >
+        <option value="">{$t("linkgrabber.auto")}</option>
+        {#each BITRATES as b}
+          <option value={b}>{b} kbps</option>
+        {/each}
+      </select>
+    </label>
+  </div>
+
   <div class="meta-row">
     <label class="check">
       <input
@@ -61,40 +91,45 @@
     />
     <span>{$t("linkgrabber.embed_metadata")}</span>
   </label>
-
-  {#if audio.embedMetadata}
-    <div class="fields">
-      <input
-        class="meta-input"
-        placeholder={defaultTitle || ($t("linkgrabber.meta_title") as string)}
-        value={audio.metaTitle ?? ""}
-        oninput={(e) => onChange({ metaTitle: e.currentTarget.value })}
-      />
-      <input
-        class="meta-input"
-        placeholder={defaultArtist || ($t("linkgrabber.meta_artist") as string)}
-        value={audio.metaArtist ?? ""}
-        oninput={(e) => onChange({ metaArtist: e.currentTarget.value })}
-      />
-      <input
-        class="meta-input"
-        placeholder={$t("linkgrabber.meta_album") as string}
-        value={audio.metaAlbum ?? ""}
-        oninput={(e) => onChange({ metaAlbum: e.currentTarget.value })}
-      />
-    </div>
-  {/if}
 </div>
 
 <style>
   .music-meta {
     display: flex;
     flex-direction: column;
-    gap: var(--space-2, 8px);
+    gap: var(--space-3, 12px);
     padding: var(--space-3, 12px);
     background: var(--surface, #1c1c1e);
     border: 1px solid var(--border, #2c2c2e);
     border-radius: var(--radius-sm, 8px);
+  }
+
+  .selects {
+    display: flex;
+    gap: var(--space-3, 12px);
+    flex-wrap: wrap;
+  }
+
+  .sel {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    flex: 1 1 140px;
+  }
+
+  .sel-label {
+    font-size: var(--text-xs, 12px);
+    color: var(--text-muted, #98989f);
+  }
+
+  .sel-ctrl {
+    height: 34px;
+    padding: 0 10px;
+    font-size: var(--text-sm, 13.5px);
+    color: var(--text, #f2f2f7);
+    background: var(--input-bg, #1c1c1e);
+    border: 1px solid var(--input-border, #2c2c2e);
+    border-radius: var(--radius-xs, 6px);
   }
 
   .meta-row {
@@ -156,26 +191,5 @@
     font-size: 14px;
     line-height: 1;
     padding: 0 2px;
-  }
-
-  .fields {
-    display: flex;
-    flex-direction: column;
-    gap: 6px;
-  }
-
-  .meta-input {
-    height: 32px;
-    padding: 0 10px;
-    font-size: var(--text-sm, 13.5px);
-    color: var(--text, #f2f2f7);
-    background: var(--input-bg, #1c1c1e);
-    border: 1px solid var(--input-border, #2c2c2e);
-    border-radius: var(--radius-xs, 6px);
-  }
-
-  .meta-input:focus-visible {
-    outline: 2px solid var(--accent);
-    outline-offset: 1px;
   }
 </style>

@@ -480,6 +480,7 @@ pub async fn embed_metadata(
     file: &Path,
     metadata: &MetadataEmbed,
     embed_thumbnail: bool,
+    cover_square: bool,
     http_client: &reqwest::Client,
 ) -> anyhow::Result<()> {
     if !is_ffmpeg_available().await {
@@ -514,6 +515,24 @@ pub async fn embed_metadata(
         }
     } else {
         (None, false)
+    };
+
+    // Optionally crop the cover to a centered square (album-art look) so players
+    // and Finder don't pad a 16:9 thumbnail with a background.
+    let (cover_path, cover_is_temp) = match (cover_square, cover_path) {
+        (true, Some(cover)) => match crop_to_square(&cover, temp_dir).await {
+            Ok(sq) => {
+                if cover_is_temp {
+                    let _ = std::fs::remove_file(&cover);
+                }
+                (Some(sq), true)
+            }
+            Err(e) => {
+                tracing::warn!("Failed to square cover, using original: {}", e);
+                (Some(cover), cover_is_temp)
+            }
+        },
+        (_, other) => (other, cover_is_temp),
     };
 
     let args = build_embed_args(file, metadata, cover_path.as_deref(), &temp_output);
@@ -624,6 +643,35 @@ fn build_embed_args(
 
     args.push(output.to_string_lossy().to_string());
     args
+}
+
+/// Center-crop an image to a square (min dimension) into a temp jpg.
+async fn crop_to_square(input: &Path, dest_dir: &Path) -> anyhow::Result<std::path::PathBuf> {
+    let out = dest_dir.join(format!(".omniget_cover_{}.jpg", uuid::Uuid::new_v4()));
+    let output = crate::core::process::command("ffmpeg")
+        .args([
+            "-y",
+            "-i",
+            &input.to_string_lossy(),
+            "-vf",
+            "crop='min(iw,ih)':'min(iw,ih)'",
+            "-frames:v",
+            "1",
+            &out.to_string_lossy(),
+        ])
+        .stdout(std::process::Stdio::piped())
+        .stderr(std::process::Stdio::piped())
+        .output()
+        .await
+        .map_err(|e| anyhow!("Failed to run ffmpeg crop: {}", e))?;
+    if !output.status.success() {
+        let _ = std::fs::remove_file(&out);
+        return Err(anyhow!(
+            "ffmpeg crop failed: {}",
+            String::from_utf8_lossy(&output.stderr)
+        ));
+    }
+    Ok(out)
 }
 
 async fn download_thumbnail(

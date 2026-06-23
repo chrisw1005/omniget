@@ -870,6 +870,8 @@ pub async fn download_from_url(
     meta_album: Option<String>,
     audio_format: Option<String>,
     audio_quality: Option<String>,
+    output_filename: Option<String>,
+    cover_square: Option<bool>,
 ) -> Result<DownloadStarted, String> {
     let _timer_start = std::time::Instant::now();
     let platform = Platform::from_url(&url);
@@ -973,6 +975,8 @@ pub async fn download_from_url(
         || meta_title.is_some()
         || meta_artist.is_some()
         || meta_album.is_some()
+        || output_filename.is_some()
+        || cover_square.is_some()
     {
         Some(queue::EmbedOverride {
             embed_thumbnail,
@@ -981,6 +985,8 @@ pub async fn download_from_url(
             title: meta_title,
             artist: meta_artist,
             album: meta_album,
+            output_filename,
+            cover_square,
         })
     } else {
         None
@@ -1416,6 +1422,8 @@ pub async fn restore_recovery(
             item.quality,
             item.format_id,
             item.referer,
+            None,
+            None,
             None,
             None,
             None,

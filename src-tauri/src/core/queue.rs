@@ -160,6 +160,10 @@ pub struct EmbedOverride {
     pub title: Option<String>,
     pub artist: Option<String>,
     pub album: Option<String>,
+    /// Output filename base (no extension); becomes "<name>.%(ext)s".
+    pub output_filename: Option<String>,
+    /// Crop the embedded cover to a centered square (album-art look).
+    pub cover_square: Option<bool>,
 }
 
 /// Per-download audio format override (LinkGrabber audio rows). `None` format
@@ -1365,7 +1369,9 @@ async fn spawn_download_inner(
     // A user-edited title (LinkGrabber inline edit) becomes the output filename;
     // otherwise fall back to the global filename template.
     let tmpl = filename_template(
-        embed_override.as_ref().and_then(|o| o.title.as_deref()),
+        embed_override
+            .as_ref()
+            .and_then(|o| o.output_filename.as_deref()),
         &settings.download.filename_template,
     );
     let mut final_output_dir = std::path::PathBuf::from(&output_dir);
@@ -1706,10 +1712,15 @@ async fn spawn_download_inner(
                     cover_path: resolved_embed.cover_path.clone(),
                     ..Default::default()
                 };
+                let cover_square = embed_override
+                    .as_ref()
+                    .and_then(|o| o.cover_square)
+                    .unwrap_or(false);
                 if let Err(e) = ffmpeg::embed_metadata(
                     &dl.file_path,
                     &metadata,
                     resolved_embed.embed_thumbnail,
+                    cover_square,
                     shared_http_client(),
                 )
                 .await
@@ -2242,6 +2253,7 @@ mod embed_tests {
             title: Some("My Song".into()),
             artist: Some("Me".into()),
             album: Some("My Album".into()),
+            ..Default::default()
         };
         let r = resolve_embed(Some(&over), true, false, "Auto Title", "Auto Artist");
         assert!(!r.embed_metadata);

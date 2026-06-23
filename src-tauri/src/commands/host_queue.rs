@@ -99,6 +99,7 @@ pub async fn enqueue_external_inner(
         torrent_files: None,
         scheduled_at_ms: None,
         stop_at_ms: None,
+        embed_override: None,
     };
 
     {

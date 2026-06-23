@@ -862,6 +862,12 @@ pub async fn download_from_url(
     torrent_files: Option<Vec<usize>>,
     scheduled_at: Option<u64>,
     stop_at: Option<u64>,
+    embed_thumbnail: Option<bool>,
+    embed_metadata: Option<bool>,
+    cover_path: Option<String>,
+    meta_title: Option<String>,
+    meta_artist: Option<String>,
+    meta_album: Option<String>,
 ) -> Result<DownloadStarted, String> {
     let _timer_start = std::time::Instant::now();
     let platform = Platform::from_url(&url);
@@ -941,6 +947,25 @@ pub async fn download_from_url(
         }
     };
 
+    let embed_over = if embed_thumbnail.is_some()
+        || embed_metadata.is_some()
+        || cover_path.is_some()
+        || meta_title.is_some()
+        || meta_artist.is_some()
+        || meta_album.is_some()
+    {
+        Some(queue::EmbedOverride {
+            embed_thumbnail,
+            embed_metadata,
+            cover_path,
+            title: meta_title,
+            artist: meta_artist,
+            album: meta_album,
+        })
+    } else {
+        None
+    };
+
     let state_to_emit = {
         let mut q = download_queue.lock().await;
         q.enqueue(
@@ -968,6 +993,7 @@ pub async fn download_from_url(
             scheduled_at,
             stop_at,
         );
+        q.set_embed_override(download_id, embed_over);
 
         let next_ids = q.next_queued_ids();
         for nid in &next_ids {
@@ -1361,6 +1387,12 @@ pub async fn restore_recovery(
             item.quality,
             item.format_id,
             item.referer,
+            None,
+            None,
+            None,
+            None,
+            None,
+            None,
             None,
             None,
             None,

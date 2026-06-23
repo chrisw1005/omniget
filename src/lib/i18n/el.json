@@ -3755,6 +3755,9 @@
     "meta_album": "Άλμπουμ",
     "audio_format": "Μορφή ήχου",
     "audio_quality": "Ποιότητα ήχου",
-    "auto": "Αυτόματο"
+    "auto": "Αυτόματο",
+    "cover_shape": "Σχήμα εξωφύλλου",
+    "shape_square": "Τετράγωνο",
+    "shape_original": "Πρωτότυπο"
   }
 }

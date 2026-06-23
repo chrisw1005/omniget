@@ -3755,6 +3755,9 @@
     "meta_album": "專輯",
     "audio_format": "音訊格式",
     "audio_quality": "音質",
-    "auto": "自動"
+    "auto": "自動",
+    "cover_shape": "封面形狀",
+    "shape_square": "正方形",
+    "shape_original": "原始"
   }
 }

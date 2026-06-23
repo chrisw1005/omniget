@@ -3755,6 +3755,9 @@
     "meta_album": "Album",
     "audio_format": "Audio format",
     "audio_quality": "Audio quality",
-    "auto": "Auto"
+    "auto": "Auto",
+    "cover_shape": "Cover shape",
+    "shape_square": "Square",
+    "shape_original": "Original"
   }
 }

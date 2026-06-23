@@ -65,6 +65,8 @@
         audioFormat:
           item.audio && item.audio.format !== "auto" ? item.audio.format : null,
         audioQuality: item.audio?.quality || null,
+        outputFilename: item.metaTitle ?? item.title ?? null,
+        coverSquare: item.audio?.coverShape === "square",
       });
       removeItem(item.id);
       return true;

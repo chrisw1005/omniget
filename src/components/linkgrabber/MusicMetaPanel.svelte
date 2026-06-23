@@ -71,9 +71,22 @@
       />
       <span>{$t("linkgrabber.embed_cover")}</span>
     </label>
-    <button class="upload-btn" type="button" onclick={pickCover}>
-      {$t("linkgrabber.upload_cover")}
-    </button>
+    <div class="cover-actions">
+      {#if audio.embedThumbnail}
+        <select
+          class="shape-select"
+          value={audio.coverShape}
+          aria-label={$t("linkgrabber.cover_shape") as string}
+          onchange={(e) => onChange({ coverShape: e.currentTarget.value })}
+        >
+          <option value="square">{$t("linkgrabber.shape_square")}</option>
+          <option value="original">{$t("linkgrabber.shape_original")}</option>
+        </select>
+      {/if}
+      <button class="upload-btn" type="button" onclick={pickCover}>
+        {$t("linkgrabber.upload_cover")}
+      </button>
+    </div>
   </div>
 
   {#if audio.coverPath}
@@ -150,6 +163,22 @@
 
   .check input {
     accent-color: var(--accent);
+  }
+
+  .cover-actions {
+    display: flex;
+    align-items: center;
+    gap: var(--space-2, 8px);
+  }
+
+  .shape-select {
+    height: 30px;
+    padding: 0 8px;
+    font-size: var(--text-xs, 12px);
+    color: var(--text, #f2f2f7);
+    background: var(--input-bg, #1c1c1e);
+    border: 1px solid var(--input-border, #2c2c2e);
+    border-radius: var(--radius-xs, 6px);
   }
 
   .upload-btn {

@@ -12,6 +12,7 @@ export interface LinkGrabberAudio {
   coverPath?: string | null;
   format: string; // "auto" | "m4a" | "mp3" | "flac" | "opus" | "wav"
   quality: string; // "" = auto | "128" | "192" | "256" | "320" (kbps)
+  coverShape: string; // "square" | "original"
 }
 
 export interface LinkGrabberItem {
@@ -67,6 +68,7 @@ export function createItem(
       coverPath: null,
       format: "auto",
       quality: "",
+      coverShape: "square",
     };
   }
   return item;
@@ -92,6 +94,7 @@ function normalizeItem(x: LinkGrabberItem): LinkGrabberItem {
     };
     if (typeof a.format !== "string") a.format = "auto";
     if (typeof a.quality !== "string") a.quality = "";
+    if (typeof a.coverShape !== "string") a.coverShape = "square";
     if (a.metaTitle && !x.metaTitle) x.metaTitle = a.metaTitle;
     if (a.metaArtist && !x.metaArtist) x.metaArtist = a.metaArtist;
     if (a.metaAlbum && !x.metaAlbum) x.metaAlbum = a.metaAlbum;

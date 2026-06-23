@@ -36,6 +36,7 @@
     coverPath: null,
     format: "auto",
     quality: "",
+    coverShape: "square",
   };
 
   const displayTitle = $derived(item.metaTitle ?? item.title ?? item.url);

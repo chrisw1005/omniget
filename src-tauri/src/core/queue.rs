@@ -149,6 +149,77 @@ pub struct QueueItemInfo {
     pub download_mode: Option<String>,
 }
 
+/// Per-download overrides for cover-art / metadata embedding. Any `None` field
+/// falls back to the global `settings.download.*` default. Set by the
+/// LinkGrabber flow; normal downloads leave it `None`.
+#[derive(Debug, Clone, Default)]
+pub struct EmbedOverride {
+    pub embed_thumbnail: Option<bool>,
+    pub embed_metadata: Option<bool>,
+    pub cover_path: Option<String>,
+    pub title: Option<String>,
+    pub artist: Option<String>,
+    pub album: Option<String>,
+    /// Output filename base (no extension); becomes "<name>.%(ext)s".
+    pub output_filename: Option<String>,
+    /// Crop the embedded cover to a centered square (album-art look).
+    pub cover_square: Option<bool>,
+}
+
+/// Per-download audio format override (LinkGrabber audio rows). `None` format
+/// falls back to the global `settings.download.music_audio_format`.
+#[derive(Debug, Clone, Default)]
+pub struct AudioFormatOverride {
+    pub format: Option<String>,
+}
+
+/// Resolved embed decision after merging an `EmbedOverride` with the defaults.
+#[derive(Debug, Clone, PartialEq)]
+pub(crate) struct ResolvedEmbed {
+    pub embed_metadata: bool,
+    pub embed_thumbnail: bool,
+    pub title: Option<String>,
+    pub artist: Option<String>,
+    pub album: Option<String>,
+    pub cover_path: Option<String>,
+}
+
+/// Merge a per-download override with the global defaults. Pure for testability.
+pub(crate) fn resolve_embed(
+    over: Option<&EmbedOverride>,
+    default_embed_metadata: bool,
+    default_embed_thumbnail: bool,
+    auto_title: &str,
+    auto_artist: &str,
+) -> ResolvedEmbed {
+    ResolvedEmbed {
+        embed_metadata: over
+            .and_then(|o| o.embed_metadata)
+            .unwrap_or(default_embed_metadata),
+        embed_thumbnail: over
+            .and_then(|o| o.embed_thumbnail)
+            .unwrap_or(default_embed_thumbnail),
+        title: over
+            .and_then(|o| o.title.clone())
+            .or_else(|| Some(auto_title.to_string())),
+        artist: over
+            .and_then(|o| o.artist.clone())
+            .or_else(|| Some(auto_artist.to_string())),
+        album: over.and_then(|o| o.album.clone()),
+        cover_path: over.and_then(|o| o.cover_path.clone()),
+    }
+}
+
+/// Build the yt-dlp output template. A non-empty `edited_title` becomes
+/// `"<title>.%(ext)s"` (with `%` escaped so the literal title is not parsed as a
+/// yt-dlp output field); otherwise the global `default_tmpl` is used.
+pub(crate) fn filename_template(edited_title: Option<&str>, default_tmpl: &str) -> String {
+    match edited_title.map(str::trim) {
+        Some(t) if !t.is_empty() => format!("{}.%(ext)s", t.replace('%', "%%")),
+        _ => default_tmpl.to_string(),
+    }
+}
+
 pub struct QueueItem {
     pub id: u64,
     pub url: String,
@@ -190,6 +261,8 @@ pub struct QueueItem {
     pub torrent_files: Option<Vec<usize>>,
     pub scheduled_at_ms: Option<u64>,
     pub stop_at_ms: Option<u64>,
+    pub embed_override: Option<EmbedOverride>,
+    pub audio_format_override: Option<AudioFormatOverride>,
 }
 
 impl QueueItem {
@@ -307,6 +380,8 @@ impl DownloadQueue {
             torrent_files,
             scheduled_at_ms,
             stop_at_ms,
+            embed_override: None,
+            audio_format_override: None,
         };
         crate::core::recovery::persist(crate::core::recovery::RecoveryItem {
             id: item.id,
@@ -320,6 +395,21 @@ impl DownloadQueue {
             referer: item.referer.clone(),
         });
         self.items.push(item);
+    }
+
+    /// Attach per-download cover/metadata overrides to a queued item
+    /// (used by the LinkGrabber flow after `enqueue`).
+    pub fn set_embed_override(&mut self, id: u64, over: Option<EmbedOverride>) {
+        if let Some(item) = self.items.iter_mut().find(|i| i.id == id) {
+            item.embed_override = over;
+        }
+    }
+
+    /// Attach a per-download audio format override (LinkGrabber audio rows).
+    pub fn set_audio_format_override(&mut self, id: u64, over: Option<AudioFormatOverride>) {
+        if let Some(item) = self.items.iter_mut().find(|i| i.id == id) {
+            item.audio_format_override = over;
+        }
     }
 
     pub fn hydrate_from_history(&mut self) {
@@ -393,6 +483,8 @@ impl DownloadQueue {
                 torrent_files: None,
                 scheduled_at_ms: None,
                 stop_at_ms: None,
+                embed_override: None,
+                audio_format_override: None,
             };
             self.items.push(item);
         }
@@ -1035,6 +1127,8 @@ async fn spawn_download_inner(
         cookie_slug,
         custom_ytdlp_args,
         torrent_files,
+        embed_override,
+        audio_format_override,
     ) = {
         let q = queue.lock().await;
         let item = match q.items.iter().find(|i| i.id == item_id) {
@@ -1060,6 +1154,8 @@ async fn spawn_download_inner(
             item.cookie_slug.clone(),
             item.custom_ytdlp_args.clone(),
             item.torrent_files.clone(),
+            item.embed_override.clone(),
+            item.audio_format_override.clone(),
         )
     };
 
@@ -1072,7 +1168,10 @@ async fn spawn_download_inner(
         } else if proxy.host.trim().is_empty() {
             "enabled but host is empty; direct connection enforced".to_string()
         } else {
-            format!("enabled; {}://{}:{}", proxy.proxy_type, proxy.host, proxy.port)
+            format!(
+                "enabled; {}://{}:{}",
+                proxy.proxy_type, proxy.host, proxy.port
+            )
         };
         append_download_log(
             &app,
@@ -1134,12 +1233,8 @@ async fn spawn_download_inner(
                 },
             );
 
-            let info_future = fetch_and_cache_info(
-                &url,
-                &*downloader,
-                &platform_name,
-                ytdlp_path.as_deref(),
-            );
+            let info_future =
+                fetch_and_cache_info(&url, &*downloader, &platform_name, ytdlp_path.as_deref());
             let scoped_info_future = omniget_core::core::log_hook::CURRENT_COOKIE_SLUG.scope(
                 cookie_slug.clone(),
                 omniget_core::core::log_hook::CURRENT_DOWNLOAD_ID.scope(item_id, info_future),
@@ -1271,14 +1366,23 @@ async fn spawn_download_inner(
     );
 
     let settings = config::load_settings(&app);
-    let tmpl = settings.download.filename_template.clone();
+    // A user-edited title (LinkGrabber inline edit) becomes the output filename;
+    // otherwise fall back to the global filename template.
+    let tmpl = filename_template(
+        embed_override
+            .as_ref()
+            .and_then(|o| o.output_filename.as_deref()),
+        &settings.download.filename_template,
+    );
     let mut final_output_dir = std::path::PathBuf::from(&output_dir);
     if settings.download.organize_by_platform {
         final_output_dir = final_output_dir.join(&platform_name);
     }
     let torrent_id_slot = Arc::new(tokio::sync::Mutex::new(None));
     let audio_format = if download_mode.as_deref() == Some("audio") {
-        Some(settings.download.music_audio_format.clone())
+        audio_format_override
+            .and_then(|o| o.format.clone())
+            .or_else(|| Some(settings.download.music_audio_format.clone()))
     } else {
         None
     };
@@ -1589,20 +1693,34 @@ async fn spawn_download_inner(
                 }
             }
 
-            if settings.download.embed_metadata
+            let resolved_embed = resolve_embed(
+                embed_override.as_ref(),
+                settings.download.embed_metadata,
+                settings.download.embed_thumbnail,
+                &info.title,
+                &info.author,
+            );
+            if (resolved_embed.embed_metadata || resolved_embed.embed_thumbnail)
                 && platform_name != "magnet"
                 && ffmpeg::is_ffmpeg_available().await
             {
                 let metadata = MetadataEmbed {
-                    title: Some(info.title.clone()),
-                    artist: Some(info.author.clone()),
+                    title: resolved_embed.title.clone(),
+                    artist: resolved_embed.artist.clone(),
+                    album: resolved_embed.album.clone(),
                     thumbnail_url: info.thumbnail_url.clone(),
+                    cover_path: resolved_embed.cover_path.clone(),
                     ..Default::default()
                 };
+                let cover_square = embed_override
+                    .as_ref()
+                    .and_then(|o| o.cover_square)
+                    .unwrap_or(false);
                 if let Err(e) = ffmpeg::embed_metadata(
                     &dl.file_path,
                     &metadata,
-                    settings.download.embed_thumbnail,
+                    resolved_embed.embed_thumbnail,
+                    cover_square,
                     shared_http_client(),
                 )
                 .await
@@ -2088,5 +2206,73 @@ mod kind_tests {
     fn case_insensitive() {
         assert_eq!(kind_from_platform("YouTube"), QueueKind::Video);
         assert_eq!(kind_from_platform("TELEGRAM"), QueueKind::TelegramMedia);
+    }
+}
+
+#[cfg(test)]
+mod embed_tests {
+    use super::{filename_template, resolve_embed, EmbedOverride};
+
+    #[test]
+    fn filename_template_uses_edited_title() {
+        assert_eq!(
+            filename_template(Some("數到十"), "%(title)s [%(id)s].%(ext)s"),
+            "數到十.%(ext)s"
+        );
+    }
+
+    #[test]
+    fn filename_template_falls_back_when_blank_or_none() {
+        let def = "%(title)s [%(id)s].%(ext)s";
+        assert_eq!(filename_template(None, def), def);
+        assert_eq!(filename_template(Some("   "), def), def);
+    }
+
+    #[test]
+    fn filename_template_escapes_percent() {
+        assert_eq!(filename_template(Some("50% off"), "x"), "50%% off.%(ext)s");
+    }
+
+    #[test]
+    fn none_override_uses_defaults_and_auto_metadata() {
+        let r = resolve_embed(None, true, false, "Auto Title", "Auto Artist");
+        assert!(r.embed_metadata);
+        assert!(!r.embed_thumbnail);
+        assert_eq!(r.title.as_deref(), Some("Auto Title"));
+        assert_eq!(r.artist.as_deref(), Some("Auto Artist"));
+        assert_eq!(r.album, None);
+        assert_eq!(r.cover_path, None);
+    }
+
+    #[test]
+    fn override_takes_precedence() {
+        let over = EmbedOverride {
+            embed_thumbnail: Some(true),
+            embed_metadata: Some(false),
+            cover_path: Some("/tmp/cover.png".into()),
+            title: Some("My Song".into()),
+            artist: Some("Me".into()),
+            album: Some("My Album".into()),
+            ..Default::default()
+        };
+        let r = resolve_embed(Some(&over), true, false, "Auto Title", "Auto Artist");
+        assert!(!r.embed_metadata);
+        assert!(r.embed_thumbnail);
+        assert_eq!(r.title.as_deref(), Some("My Song"));
+        assert_eq!(r.artist.as_deref(), Some("Me"));
+        assert_eq!(r.album.as_deref(), Some("My Album"));
+        assert_eq!(r.cover_path.as_deref(), Some("/tmp/cover.png"));
+    }
+
+    #[test]
+    fn partial_override_falls_back_per_field() {
+        let over = EmbedOverride {
+            embed_metadata: Some(true),
+            ..Default::default()
+        };
+        let r = resolve_embed(Some(&over), false, true, "Auto Title", "Auto Artist");
+        assert!(r.embed_metadata); // from override
+        assert!(r.embed_thumbnail); // from default
+        assert_eq!(r.title.as_deref(), Some("Auto Title")); // auto fallback
     }
 }

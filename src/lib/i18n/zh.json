@@ -250,7 +250,8 @@
     "channel_new_auto": "{{channel}}：正在下载 {{count}} 个新视频",
     "file_copied_to_clipboard": "文件已复制到剪贴板",
     "drm_skipped": "{{count}} 个视频已跳过 — 受DRM保护（FairPlay/SAMPLE-AES）",
-    "generic_download_complete": "{{name}} — 下载完成！"
+    "generic_download_complete": "{{name}} — 下载完成！",
+    "hotkey_download_queued": "已加入下载队列"
   },
   "reencode": {
     "title": "重新编码视频",
@@ -3726,5 +3727,37 @@
       "test_title": "跟踪通知正常工作",
       "test_body": "包裹状态变化时，您将看到此类通知。"
     }
+  },
+  "linkgrabber": {
+    "title": "待下载",
+    "empty": "尚无链接。复制网址后按下载快捷键,或在下方粘贴。",
+    "add_placeholder": "粘贴视频或音频网址",
+    "add_button": "加入",
+    "mode_video": "视频",
+    "mode_audio": "音频",
+    "start": "下载",
+    "start_all": "全部开始",
+    "clear_all": "全部清除",
+    "remove": "移除",
+    "retry": "重试",
+    "status_pending": "队列中",
+    "status_fetching": "读取信息中…",
+    "status_ready": "就绪",
+    "status_error": "失败",
+    "added": "已加入待下载列表",
+    "unsupported_url": "该链接不是支持的网站",
+    "embed_cover": "嵌入封面",
+    "upload_cover": "上传封面…",
+    "cover_custom": "自定义封面",
+    "embed_metadata": "嵌入元数据",
+    "meta_title": "标题",
+    "meta_artist": "艺人",
+    "meta_album": "专辑",
+    "audio_format": "音频格式",
+    "audio_quality": "音质",
+    "auto": "自动",
+    "cover_shape": "封面形状",
+    "shape_square": "正方形",
+    "shape_original": "原始"
   }
 }

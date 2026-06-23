@@ -294,10 +294,7 @@
     <main
       class="mac-content"
       class:mac-content--home={page.url.pathname === "/"}
-      class:mac-content--pane={
-        page.url.pathname.startsWith("/settings") ||
-        page.url.pathname.startsWith("/downloads")
-      }
+      class:mac-content--pane={page.url.pathname.startsWith("/settings")}
     >
       {#if ytdlpMissing && !ytdlpDismissed && isCoreRoute}
         <div class="ytdlp-banner">

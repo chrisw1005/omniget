@@ -7,6 +7,36 @@
 type Notes = Record<string, string>; // language code -> markdown
 
 export const RELEASE_NOTES: Record<string, Notes> = {
+  "0.9.0": {
+    en: `## OmniGet 0.9.0
+
+### Link Grabber — a download staging list
+A new **Link Grabber** page. The global hotkeys (\`CmdOrCtrl+Shift+D\` for video, \`CmdOrCtrl+Shift+M\` for audio) and a paste field now send links to a staging list where you tune each one before downloading — instead of downloading immediately with the defaults.
+
+- **Collapsible rows**, each with its own quality / format (video) or format / bitrate (audio).
+- **Inline-edit** the title, author and album — just click the text. The edited title becomes the **output filename** (no \`[id]\` suffix).
+- **Audio covers**: embed the thumbnail or **upload your own**, pick a **square or original** shape, and the row preview matches the result.
+- The list **persists across restarts**, and links are checked against a supported site before they're added.
+
+### Other improvements
+- Hotkey settings are now **record-only** (removed the confusing manual "type" mode).
+- The **Downloads** page scrolls correctly again.`,
+
+    "zh-TW": `## OmniGet 0.9.0
+
+### 待下載清單(Link Grabber)
+新增**待下載**頁。全域快捷鍵(\`CmdOrCtrl+Shift+D\` 影片、\`CmdOrCtrl+Shift+M\` 音訊)與貼上欄位現在會把連結送進待下載清單,讓你逐項調整後再下載 —— 不再直接用預設值下載。
+
+- **可折疊的項目**,每筆各自設定畫質 / 格式(影片)或格式 / 位元率(音訊)。
+- **點擊即可編輯**標題、作者、專輯;編輯後的標題會直接成為**輸出檔名**(不再有 \`[id]\` 亂碼)。
+- **音訊封面**:可嵌入縮圖或**上傳自訂封面**,選擇**正方形或原始**形狀,列上預覽即所見即所得。
+- 清單**跨重啟保留**,加入前會驗證是否為支援的連結。
+
+### 其他改進
+- 快捷鍵設定改為**只用錄製**(移除容易混淆的手動輸入模式)。
+- 修正**下載**頁無法滾動的問題。`,
+  },
+
   "0.8.0": {
     en: `## OmniGet 0.8.0
 

@@ -250,7 +250,8 @@
     "channel_new_auto": "{{channel}}: download di {{count}} nuovo/i video",
     "file_copied_to_clipboard": "File copiato negli appunti",
     "drm_skipped": "{{count}} video ignorati — protetti da DRM (FairPlay/SAMPLE-AES)",
-    "generic_download_complete": "{{name}} — download completato!"
+    "generic_download_complete": "{{name}} — download completato!",
+    "hotkey_download_queued": "Aggiunto alla coda di download"
   },
   "reencode": {
     "title": "Ricodifica video",
@@ -3726,5 +3727,37 @@
       "test_title": "Le notifiche di tracciamento funzionano",
       "test_body": "Vedrai notifiche come questa quando i tuoi pacchi cambiano stato."
     }
+  },
+  "linkgrabber": {
+    "title": "Raccolta link",
+    "empty": "Nessun link. Copia un URL e premi la scorciatoia di download, oppure incollalo qui sotto.",
+    "add_placeholder": "Incolla un URL video o audio",
+    "add_button": "Aggiungi",
+    "mode_video": "Video",
+    "mode_audio": "Audio",
+    "start": "Scarica",
+    "start_all": "Avvia tutti",
+    "clear_all": "Cancella tutto",
+    "remove": "Rimuovi",
+    "retry": "Riprova",
+    "status_pending": "In coda",
+    "status_fetching": "Caricamento informazioni…",
+    "status_ready": "Pronto",
+    "status_error": "Non riuscito",
+    "added": "Aggiunto alla lista",
+    "unsupported_url": "Il link non è di un sito supportato",
+    "embed_cover": "Incorpora copertina",
+    "upload_cover": "Carica copertina…",
+    "cover_custom": "Copertina personalizzata",
+    "embed_metadata": "Incorpora metadati",
+    "meta_title": "Titolo",
+    "meta_artist": "Artista",
+    "meta_album": "Album",
+    "audio_format": "Formato audio",
+    "audio_quality": "Qualità audio",
+    "auto": "Automatico",
+    "cover_shape": "Forma copertina",
+    "shape_square": "Quadrato",
+    "shape_original": "Originale"
   }
 }

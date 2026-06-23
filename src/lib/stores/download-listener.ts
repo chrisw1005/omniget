@@ -15,6 +15,11 @@ import {
   markFileError,
 } from "./convert-store.svelte";
 import { setMediaPreview } from "./media-preview-store.svelte";
+import {
+  addItem as linkgrabberAdd,
+  enqueueFetch as linkgrabberFetch,
+  applyPreview as linkgrabberApplyPreview,
+} from "./linkgrabber-store.svelte";
 import { addLog } from "./debug-store.svelte";
 import { recordDownloadComplete } from "./download-stats.svelte";
 import { rpcSyncIdleStats } from "$lib/rpc";
@@ -36,6 +41,24 @@ async function notifyComplete(title: string) {
     }
   } catch {
     // notifications are optional; never block completion handling
+  }
+}
+
+// Best-effort OS notification with an optional body. Used for the global
+// download hotkey, which usually fires while OmniGet is in the background, so an
+// in-app toast alone would be invisible.
+async function notify(title: string, body?: string) {
+  try {
+    const n = await import("@tauri-apps/plugin-notification");
+    let granted = await n.isPermissionGranted();
+    if (!granted) {
+      granted = (await n.requestPermission()) === "granted";
+    }
+    if (granted) {
+      n.sendNotification(body ? { title, body } : { title });
+    }
+  } catch {
+    // notifications are optional; never block
   }
 }
 
@@ -379,6 +402,35 @@ export async function initDownloadListener(): Promise<() => void> {
     },
   );
 
+  // The global hotkeys (CmdOrCtrl+Shift+D / +M) send a recognized URL to the
+  // LinkGrabber staging list. Add it, kick off its info fetch, and surface it
+  // (the hotkey usually fires while OmniGet is in the background).
+  const unlistenLinkgrabberAdd = await listen<{
+    url: string;
+    mode: "video" | "audio";
+  }>("linkgrabber-add", (event) => {
+    const { url, mode } = event.payload;
+    const item = linkgrabberAdd(url, mode);
+    const tr = get(t);
+    if (item) {
+      linkgrabberFetch(item.id);
+      const msg = tr("linkgrabber.added") as string;
+      showToast("success", msg);
+      void notify(msg, url);
+      addLog("info", "download", `LinkGrabber added (${mode}): ${url}`);
+    } else {
+      addLog("info", "download", `LinkGrabber skipped duplicate: ${url}`);
+    }
+  });
+
+  const unlistenLinkgrabberRejected = await listen<{ url: string }>(
+    "linkgrabber-add-rejected",
+    () => {
+      const tr = get(t);
+      showToast("error", tr("linkgrabber.unsupported_url"));
+    },
+  );
+
   const unlistenMediaPreview = await listen<{
     url: string;
     title: string;
@@ -387,6 +439,8 @@ export async function initDownloadListener(): Promise<() => void> {
     duration_seconds: number | null;
   }>("media-info-preview", (event) => {
     setMediaPreview(event.payload);
+    // Enrich any staged LinkGrabber item awaiting its preview.
+    linkgrabberApplyPreview(event.payload.url, event.payload);
   });
 
   let cookieErrorShown = false;
@@ -415,6 +469,8 @@ export async function initDownloadListener(): Promise<() => void> {
     unlistenConvertProgress();
     unlistenConvertComplete();
     unlistenFileCopied();
+    unlistenLinkgrabberAdd();
+    unlistenLinkgrabberRejected();
     unlistenMediaPreview();
     clearInterval(cookieCheckInterval);
     if (throttleTimer !== null) {

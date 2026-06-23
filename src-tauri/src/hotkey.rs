@@ -1,4 +1,4 @@
-use tauri::Emitter;
+use tauri::{Emitter, Manager};
 use tauri_plugin_clipboard_manager::ClipboardExt;
 use tauri_plugin_global_shortcut::{GlobalShortcutExt, Shortcut};
 
@@ -86,61 +86,66 @@ fn matches_binding(pressed: &Shortcut, binding: &str) -> bool {
 }
 
 fn handle_download_clipboard(app: &tauri::AppHandle) {
-    let text = match app.clipboard().read_text() {
-        Ok(t) => t,
-        Err(_) => return,
-    };
-
-    let text = text.trim().to_string();
-    if text.is_empty() || (!text.starts_with("http://") && !text.starts_with("https://")) {
-        return;
-    }
-
-    if url::Url::parse(&text).is_err() {
-        return;
-    }
-
-    let app = app.clone();
-    tauri::async_runtime::spawn(async move {
-        enqueue_from_clipboard(&app, text).await;
-    });
-}
-
-async fn enqueue_from_clipboard(app: &tauri::AppHandle, url: String) {
-    if matches!(
-        crate::external_url::queue_url_with_defaults(app, url.clone(), true, None).await,
-        Ok(crate::external_url::QueueUrlOutcome::Queued)
-    ) {
-        let _ = app.emit("hotkey-download-queued", serde_json::json!({ "url": url }));
-    }
+    clipboard_to_linkgrabber(app, "video");
 }
 
 fn handle_music_clipboard(app: &tauri::AppHandle) {
-    let text = match app.clipboard().read_text() {
-        Ok(t) => t,
+    clipboard_to_linkgrabber(app, "audio");
+}
+
+/// Read the clipboard and, if it holds a URL handled by a known platform, send
+/// it to the LinkGrabber staging list (`mode` = "video" | "audio"); otherwise
+/// emit a rejection so the UI can tell the user the link is not supported.
+fn clipboard_to_linkgrabber(app: &tauri::AppHandle, mode: &str) {
+    let raw = match app.clipboard().read_text() {
+        Ok(t) => t.trim().to_string(),
         Err(_) => return,
     };
-    let text = text.trim().to_string();
-    if text.is_empty() || (!text.starts_with("http://") && !text.starts_with("https://")) {
+    if raw.is_empty() {
         return;
     }
-    if url::Url::parse(&text).is_err() {
-        return;
+    if is_recognized_media_url(app, &raw) {
+        let _ = app.emit(
+            "linkgrabber-add",
+            serde_json::json!({ "url": raw, "mode": mode }),
+        );
+    } else {
+        let _ = app.emit(
+            "linkgrabber-add-rejected",
+            serde_json::json!({ "url": raw }),
+        );
+    }
+}
+
+/// True for an `http(s)` URL that the platform registry recognizes.
+fn is_recognized_media_url(app: &tauri::AppHandle, url: &str) -> bool {
+    if !is_http_url(url) {
+        return false;
+    }
+    let state = app.state::<crate::AppState>();
+    state.registry.find_platform(url).is_some()
+}
+
+/// Pure URL-shape check: an `http(s)` URL that parses.
+fn is_http_url(url: &str) -> bool {
+    (url.starts_with("http://") || url.starts_with("https://")) && url::Url::parse(url).is_ok()
+}
+
+#[cfg(test)]
+mod tests {
+    use super::is_http_url;
+
+    #[test]
+    fn accepts_http_urls() {
+        assert!(is_http_url("https://youtube.com/watch?v=abc"));
+        assert!(is_http_url("http://example.com/a"));
     }
 
-    let app = app.clone();
-    tauri::async_runtime::spawn(async move {
-        if matches!(
-            crate::external_url::queue_url_with_defaults(
-                &app,
-                text.clone(),
-                true,
-                Some("audio".to_string()),
-            )
-            .await,
-            Ok(crate::external_url::QueueUrlOutcome::Queued)
-        ) {
-            let _ = app.emit("hotkey-download-queued", serde_json::json!({ "url": text }));
-        }
-    });
+    #[test]
+    fn rejects_non_http() {
+        assert!(!is_http_url(""));
+        assert!(!is_http_url("not a url"));
+        assert!(!is_http_url("ftp://example.com"));
+        assert!(!is_http_url("magnet:?xt=urn:btih:abc"));
+    }
 }

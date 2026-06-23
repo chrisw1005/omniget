@@ -250,7 +250,8 @@
     "channel_new_auto": "{{channel}}: baixando {{count}} vídeo(s) novo(s)",
     "file_copied_to_clipboard": "Arquivo copiado para o clipboard",
     "drm_skipped": "{{count}} vídeo(s) ignorados — protegidos por DRM (FairPlay/SAMPLE-AES)",
-    "generic_download_complete": "{{name}} — download concluído!"
+    "generic_download_complete": "{{name}} — download concluído!",
+    "hotkey_download_queued": "Adicionado à fila de downloads"
   },
   "reencode": {
     "title": "Re-codificar vídeo",
@@ -3726,5 +3727,37 @@
       "test_title": "As notificações de rastreamento estão funcionando",
       "test_body": "Você verá notificações assim quando os pacotes mudarem de status."
     }
+  },
+  "linkgrabber": {
+    "title": "Coletor de links",
+    "empty": "Nenhum link ainda. Copie um URL e pressione o atalho de download, ou cole abaixo.",
+    "add_placeholder": "Cole um URL de vídeo ou áudio",
+    "add_button": "Adicionar",
+    "mode_video": "Vídeo",
+    "mode_audio": "Áudio",
+    "start": "Baixar",
+    "start_all": "Iniciar todos",
+    "clear_all": "Limpar tudo",
+    "remove": "Remover",
+    "retry": "Tentar novamente",
+    "status_pending": "Na fila",
+    "status_fetching": "Carregando informações…",
+    "status_ready": "Pronto",
+    "status_error": "Falhou",
+    "added": "Adicionado à lista",
+    "unsupported_url": "Esse link não é de um site compatível",
+    "embed_cover": "Incorporar capa",
+    "upload_cover": "Enviar capa…",
+    "cover_custom": "Capa personalizada",
+    "embed_metadata": "Incorporar metadados",
+    "meta_title": "Título",
+    "meta_artist": "Artista",
+    "meta_album": "Álbum",
+    "audio_format": "Formato de áudio",
+    "audio_quality": "Qualidade de áudio",
+    "auto": "Automático",
+    "cover_shape": "Formato da capa",
+    "shape_square": "Quadrado",
+    "shape_original": "Original"
   }
 }

@@ -1,5 +1,7 @@
 // LinkGrabber staging-list store. The reactive `$state` array lives here; all
 // rune-free logic lives in `linkgrabber-logic.ts` (unit-tested separately).
+import { invoke } from "@tauri-apps/api/core";
+import type { FormatInfo } from "$lib/types/formats";
 import {
   createItem,
   isDuplicate,
@@ -66,4 +68,64 @@ export function updateItem(id: string, patch: Partial<LinkGrabberItem>): void {
 export function clearAll(): void {
   items.splice(0, items.length);
   persist();
+}
+
+/** Apply a media-info preview (routed from the `media-info-preview` event) to
+ * whichever staged item has this URL. Enriches title/thumbnail/duration. */
+export function applyPreview(
+  url: string,
+  preview: {
+    title?: string;
+    author?: string;
+    thumbnail_url?: string | null;
+    duration_seconds?: number | null;
+  },
+): void {
+  const item = items.find((i) => i.url === url);
+  if (!item) return;
+  updateItem(item.id, {
+    title: preview.title ?? item.title,
+    author: preview.author ?? item.author,
+    thumbnailUrl: preview.thumbnail_url ?? item.thumbnailUrl ?? null,
+    durationSeconds: preview.duration_seconds ?? item.durationSeconds ?? null,
+  });
+}
+
+// --- per-item fetch with a small concurrency cap ---------------------------
+const MAX_CONCURRENT_FETCH = 3;
+let inFlight = 0;
+const fetchQueue: string[] = [];
+
+/** Queue an item for media-info + format fetching (respects the cap). */
+export function enqueueFetch(id: string): void {
+  if (!fetchQueue.includes(id)) fetchQueue.push(id);
+  pumpFetch();
+}
+
+function pumpFetch(): void {
+  while (inFlight < MAX_CONCURRENT_FETCH && fetchQueue.length > 0) {
+    const id = fetchQueue.shift() as string;
+    inFlight += 1;
+    void fetchItem(id).finally(() => {
+      inFlight -= 1;
+      pumpFetch();
+    });
+  }
+}
+
+async function fetchItem(id: string): Promise<void> {
+  const item = items.find((i) => i.id === id);
+  if (!item) return;
+  updateItem(id, { status: "fetching", formatError: undefined });
+  // Fire-and-forget preview; it arrives via the `media-info-preview` event and
+  // is routed back here through applyPreview() by the download listener.
+  void invoke("prefetch_media_info", { url: item.url }).catch(() => {});
+  try {
+    const formats = await invoke<FormatInfo[]>("get_media_formats", {
+      url: item.url,
+    });
+    updateItem(id, { formats, status: "ready" });
+  } catch (e) {
+    updateItem(id, { status: "error", formatError: String(e) });
+  }
 }

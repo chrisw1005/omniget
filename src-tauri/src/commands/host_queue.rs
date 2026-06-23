@@ -100,6 +100,7 @@ pub async fn enqueue_external_inner(
         scheduled_at_ms: None,
         stop_at_ms: None,
         embed_override: None,
+        audio_format_override: None,
     };
 
     {

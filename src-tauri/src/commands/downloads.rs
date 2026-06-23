@@ -868,15 +868,35 @@ pub async fn download_from_url(
     meta_title: Option<String>,
     meta_artist: Option<String>,
     meta_album: Option<String>,
+    audio_format: Option<String>,
+    audio_quality: Option<String>,
 ) -> Result<DownloadStarted, String> {
     let _timer_start = std::time::Instant::now();
     let platform = Platform::from_url(&url);
 
-    let custom_ytdlp_args = match time_range.as_deref().map(str::trim) {
-        Some(r) if !r.is_empty() && is_valid_time_range(r) => {
-            Some(vec!["--download-sections".to_string(), format!("*{}", r)])
+    let custom_ytdlp_args = {
+        let mut extra: Vec<String> = Vec::new();
+        if let Some(r) = time_range.as_deref().map(str::trim) {
+            if !r.is_empty() && is_valid_time_range(r) {
+                extra.push("--download-sections".to_string());
+                extra.push(format!("*{}", r));
+            }
         }
-        _ => None,
+        // Per-download audio bitrate (LinkGrabber audio rows) — applies when
+        // yt-dlp re-encodes the audio (e.g. mp3/opus); ignored for stream copy.
+        if download_mode.as_deref() == Some("audio") {
+            if let Some(q) = audio_quality.as_deref().map(str::trim) {
+                if !q.is_empty() {
+                    extra.push("--audio-quality".to_string());
+                    extra.push(format!("{}K", q));
+                }
+            }
+        }
+        if extra.is_empty() {
+            None
+        } else {
+            Some(extra)
+        }
     };
 
     if let Err(err) = crate::core::path_limits::validate_output_dir(&output_dir) {
@@ -966,6 +986,14 @@ pub async fn download_from_url(
         None
     };
 
+    let audio_over = audio_format
+        .as_deref()
+        .map(str::trim)
+        .filter(|f| !f.is_empty() && *f != "auto")
+        .map(|f| queue::AudioFormatOverride {
+            format: Some(f.to_string()),
+        });
+
     let state_to_emit = {
         let mut q = download_queue.lock().await;
         q.enqueue(
@@ -994,6 +1022,7 @@ pub async fn download_from_url(
             stop_at,
         );
         q.set_embed_override(download_id, embed_over);
+        q.set_audio_format_override(download_id, audio_over);
 
         let next_ids = q.next_queued_ids();
         for nid in &next_ids {
@@ -1387,6 +1416,8 @@ pub async fn restore_recovery(
             item.quality,
             item.format_id,
             item.referer,
+            None,
+            None,
             None,
             None,
             None,

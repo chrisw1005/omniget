@@ -162,6 +162,13 @@ pub struct EmbedOverride {
     pub album: Option<String>,
 }
 
+/// Per-download audio format override (LinkGrabber audio rows). `None` format
+/// falls back to the global `settings.download.music_audio_format`.
+#[derive(Debug, Clone, Default)]
+pub struct AudioFormatOverride {
+    pub format: Option<String>,
+}
+
 /// Resolved embed decision after merging an `EmbedOverride` with the defaults.
 #[derive(Debug, Clone, PartialEq)]
 pub(crate) struct ResolvedEmbed {
@@ -241,6 +248,7 @@ pub struct QueueItem {
     pub scheduled_at_ms: Option<u64>,
     pub stop_at_ms: Option<u64>,
     pub embed_override: Option<EmbedOverride>,
+    pub audio_format_override: Option<AudioFormatOverride>,
 }
 
 impl QueueItem {
@@ -359,6 +367,7 @@ impl DownloadQueue {
             scheduled_at_ms,
             stop_at_ms,
             embed_override: None,
+            audio_format_override: None,
         };
         crate::core::recovery::persist(crate::core::recovery::RecoveryItem {
             id: item.id,
@@ -379,6 +388,13 @@ impl DownloadQueue {
     pub fn set_embed_override(&mut self, id: u64, over: Option<EmbedOverride>) {
         if let Some(item) = self.items.iter_mut().find(|i| i.id == id) {
             item.embed_override = over;
+        }
+    }
+
+    /// Attach a per-download audio format override (LinkGrabber audio rows).
+    pub fn set_audio_format_override(&mut self, id: u64, over: Option<AudioFormatOverride>) {
+        if let Some(item) = self.items.iter_mut().find(|i| i.id == id) {
+            item.audio_format_override = over;
         }
     }
 
@@ -454,6 +470,7 @@ impl DownloadQueue {
                 scheduled_at_ms: None,
                 stop_at_ms: None,
                 embed_override: None,
+                audio_format_override: None,
             };
             self.items.push(item);
         }
@@ -1097,6 +1114,7 @@ async fn spawn_download_inner(
         custom_ytdlp_args,
         torrent_files,
         embed_override,
+        audio_format_override,
     ) = {
         let q = queue.lock().await;
         let item = match q.items.iter().find(|i| i.id == item_id) {
@@ -1123,6 +1141,7 @@ async fn spawn_download_inner(
             item.custom_ytdlp_args.clone(),
             item.torrent_files.clone(),
             item.embed_override.clone(),
+            item.audio_format_override.clone(),
         )
     };
 
@@ -1340,7 +1359,9 @@ async fn spawn_download_inner(
     }
     let torrent_id_slot = Arc::new(tokio::sync::Mutex::new(None));
     let audio_format = if download_mode.as_deref() == Some("audio") {
-        Some(settings.download.music_audio_format.clone())
+        audio_format_override
+            .and_then(|o| o.format.clone())
+            .or_else(|| Some(settings.download.music_audio_format.clone()))
     } else {
         None
     };

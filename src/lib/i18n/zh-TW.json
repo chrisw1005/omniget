@@ -250,7 +250,8 @@
     "channel_new_auto": "{{channel}}：正在下載 {{count}} 個新影片",
     "file_copied_to_clipboard": "檔案已複製到剪貼簿",
     "drm_skipped": "已略過 {{count}} 部影片 — 受 DRM (FairPlay/SAMPLE-AES) 保護",
-    "generic_download_complete": "{{name}} — 下載完成！"
+    "generic_download_complete": "{{name}} — 下載完成！",
+    "hotkey_download_queued": "已加入下載佇列"
   },
   "reencode": {
     "title": "重新編碼影片",
@@ -3726,5 +3727,31 @@
       "test_title": "追蹤通知運作正常",
       "test_body": "包裹狀態變化時，您將看到此類通知。"
     }
+  },
+  "linkgrabber": {
+    "title": "待下載",
+    "empty": "尚無連結。複製網址後按下載快捷鍵,或在下方貼上。",
+    "add_placeholder": "貼上影片或音訊網址",
+    "add_button": "加入",
+    "mode_video": "影片",
+    "mode_audio": "音訊",
+    "start": "下載",
+    "start_all": "全部開始",
+    "clear_all": "全部清除",
+    "remove": "移除",
+    "retry": "重試",
+    "status_pending": "佇列中",
+    "status_fetching": "讀取資訊中…",
+    "status_ready": "就緒",
+    "status_error": "失敗",
+    "added": "已加入待下載清單",
+    "unsupported_url": "這個連結不是支援的網站",
+    "embed_cover": "嵌入封面",
+    "upload_cover": "上傳封面…",
+    "cover_custom": "自訂封面",
+    "embed_metadata": "嵌入 metadata",
+    "meta_title": "標題",
+    "meta_artist": "演出者",
+    "meta_album": "專輯"
   }
 }

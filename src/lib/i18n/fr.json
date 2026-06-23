@@ -250,7 +250,8 @@
     "channel_new_auto": "{{channel}} : téléchargement de {{count}} nouvelle(s) vidéo(s)",
     "file_copied_to_clipboard": "Fichier copié dans le presse-papiers",
     "drm_skipped": "{{count}} vidéo(s) ignorée(s) — protégée(s) par DRM (FairPlay/SAMPLE-AES)",
-    "generic_download_complete": "{{name}} — téléchargement terminé !"
+    "generic_download_complete": "{{name}} — téléchargement terminé !",
+    "hotkey_download_queued": "Ajouté à la file de téléchargement"
   },
   "reencode": {
     "title": "Réencoder la vidéo",
@@ -3726,5 +3727,31 @@
       "test_title": "Les notifications de suivi fonctionnent",
       "test_body": "Vous verrez ce type de notification lorsque vos colis évoluent."
     }
+  },
+  "linkgrabber": {
+    "title": "Collecteur de liens",
+    "empty": "Aucun lien. Copiez une URL et appuyez sur le raccourci de téléchargement, ou collez-la ci-dessous.",
+    "add_placeholder": "Collez une URL vidéo ou audio",
+    "add_button": "Ajouter",
+    "mode_video": "Vidéo",
+    "mode_audio": "Audio",
+    "start": "Télécharger",
+    "start_all": "Tout démarrer",
+    "clear_all": "Tout effacer",
+    "remove": "Retirer",
+    "retry": "Réessayer",
+    "status_pending": "En file",
+    "status_fetching": "Chargement des infos…",
+    "status_ready": "Prêt",
+    "status_error": "Échec",
+    "added": "Ajouté à la liste",
+    "unsupported_url": "Ce lien ne provient pas d'un site pris en charge",
+    "embed_cover": "Intégrer la pochette",
+    "upload_cover": "Téléverser une pochette…",
+    "cover_custom": "Pochette personnalisée",
+    "embed_metadata": "Intégrer les métadonnées",
+    "meta_title": "Titre",
+    "meta_artist": "Artiste",
+    "meta_album": "Album"
   }
 }

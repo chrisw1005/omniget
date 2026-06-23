@@ -250,7 +250,8 @@
     "channel_new_auto": "{{channel}}: загрузка {{count}} новых видео",
     "file_copied_to_clipboard": "Файл скопирован в буфер обмена",
     "drm_skipped": "{{count}} видео пропущено — защищено DRM (FairPlay/SAMPLE-AES)",
-    "generic_download_complete": "{{name}} — загрузка завершена!"
+    "generic_download_complete": "{{name}} — загрузка завершена!",
+    "hotkey_download_queued": "Добавлено в очередь загрузок"
   },
   "reencode": {
     "title": "Перекодировать видео",
@@ -3726,5 +3727,31 @@
       "test_title": "Уведомления отслеживания работают",
       "test_body": "Вы будете видеть такие уведомления, когда ваши посылки перемещаются."
     }
+  },
+  "linkgrabber": {
+    "title": "Сбор ссылок",
+    "empty": "Пока нет ссылок. Скопируйте URL и нажмите горячую клавишу загрузки или вставьте ниже.",
+    "add_placeholder": "Вставьте ссылку на видео или аудио",
+    "add_button": "Добавить",
+    "mode_video": "Видео",
+    "mode_audio": "Аудио",
+    "start": "Скачать",
+    "start_all": "Запустить все",
+    "clear_all": "Очистить все",
+    "remove": "Удалить",
+    "retry": "Повторить",
+    "status_pending": "В очереди",
+    "status_fetching": "Загрузка сведений…",
+    "status_ready": "Готово",
+    "status_error": "Ошибка",
+    "added": "Добавлено в список",
+    "unsupported_url": "Ссылка не с поддерживаемого сайта",
+    "embed_cover": "Встроить обложку",
+    "upload_cover": "Загрузить обложку…",
+    "cover_custom": "Своя обложка",
+    "embed_metadata": "Встроить метаданные",
+    "meta_title": "Название",
+    "meta_artist": "Исполнитель",
+    "meta_album": "Альбом"
   }
 }

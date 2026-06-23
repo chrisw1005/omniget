@@ -250,7 +250,8 @@
     "channel_new_auto": "{{channel}}: descargando {{count}} vídeo(s) nuevo(s)",
     "file_copied_to_clipboard": "Archivo copiado al portapapeles",
     "drm_skipped": "{{count}} vídeo(s) omitidos — protegidos por DRM (FairPlay/SAMPLE-AES)",
-    "generic_download_complete": "{{name}} — ¡descarga completa!"
+    "generic_download_complete": "{{name}} — ¡descarga completa!",
+    "hotkey_download_queued": "Añadido a la cola de descargas"
   },
   "reencode": {
     "title": "Recodificar vídeo",
@@ -3726,5 +3727,31 @@
       "test_title": "Las notificaciones de seguimiento funcionan",
       "test_body": "Verás notificaciones así cuando tus paquetes cambien de estado."
     }
+  },
+  "linkgrabber": {
+    "title": "Recolector de enlaces",
+    "empty": "Aún no hay enlaces. Copia una URL y pulsa el atajo de descarga, o pégala abajo.",
+    "add_placeholder": "Pega una URL de vídeo o audio",
+    "add_button": "Añadir",
+    "mode_video": "Vídeo",
+    "mode_audio": "Audio",
+    "start": "Descargar",
+    "start_all": "Iniciar todo",
+    "clear_all": "Borrar todo",
+    "remove": "Quitar",
+    "retry": "Reintentar",
+    "status_pending": "En cola",
+    "status_fetching": "Cargando información…",
+    "status_ready": "Listo",
+    "status_error": "Falló",
+    "added": "Añadido a la lista",
+    "unsupported_url": "Ese enlace no es de un sitio compatible",
+    "embed_cover": "Incrustar carátula",
+    "upload_cover": "Subir carátula…",
+    "cover_custom": "Carátula personalizada",
+    "embed_metadata": "Incrustar metadatos",
+    "meta_title": "Título",
+    "meta_artist": "Artista",
+    "meta_album": "Álbum"
   }
 }

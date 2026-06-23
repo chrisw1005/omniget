@@ -250,7 +250,8 @@
     "channel_new_auto": "{{channel}}：新着動画 {{count}} 件をダウンロード中",
     "file_copied_to_clipboard": "ファイルをクリップボードにコピーしました",
     "drm_skipped": "{{count}} 本の動画をスキップしました — DRM保護（FairPlay/SAMPLE-AES）",
-    "generic_download_complete": "{{name}} — ダウンロード完了！"
+    "generic_download_complete": "{{name}} — ダウンロード完了！",
+    "hotkey_download_queued": "ダウンロードキューに追加しました"
   },
   "reencode": {
     "title": "動画を再エンコード",
@@ -3726,5 +3727,31 @@
       "test_title": "追跡通知は有効です",
       "test_body": "荷物のステータスが変わると、このような通知が表示されます。"
     }
+  },
+  "linkgrabber": {
+    "title": "リンク取り込み",
+    "empty": "リンクがありません。URLをコピーしてダウンロードのショートカットを押すか、下に貼り付けてください。",
+    "add_placeholder": "動画または音声のURLを貼り付け",
+    "add_button": "追加",
+    "mode_video": "動画",
+    "mode_audio": "音声",
+    "start": "ダウンロード",
+    "start_all": "すべて開始",
+    "clear_all": "すべて消去",
+    "remove": "削除",
+    "retry": "再試行",
+    "status_pending": "待機中",
+    "status_fetching": "情報を取得中…",
+    "status_ready": "準備完了",
+    "status_error": "失敗",
+    "added": "待機リストに追加しました",
+    "unsupported_url": "対応していないサイトのリンクです",
+    "embed_cover": "カバーを埋め込む",
+    "upload_cover": "カバーをアップロード…",
+    "cover_custom": "カスタムカバー",
+    "embed_metadata": "メタデータを埋め込む",
+    "meta_title": "タイトル",
+    "meta_artist": "アーティスト",
+    "meta_album": "アルバム"
   }
 }

@@ -250,7 +250,8 @@
     "channel_new_auto": "{{channel}}: downloading {{count}} new video(s)",
     "file_copied_to_clipboard": "File copied to clipboard",
     "drm_skipped": "{{count}} video(s) skipped — protected by DRM (FairPlay/SAMPLE-AES)",
-    "generic_download_complete": "{{name}} — download complete!"
+    "generic_download_complete": "{{name}} — download complete!",
+    "hotkey_download_queued": "Added to download queue"
   },
   "reencode": {
     "title": "Re-encode video",
@@ -3726,5 +3727,31 @@
       "test_title": "Tracking notifications are working",
       "test_body": "You will see notifications like this when your packages move."
     }
+  },
+  "linkgrabber": {
+    "title": "Link Grabber",
+    "empty": "No links yet. Copy a URL and press the download hotkey, or paste one below.",
+    "add_placeholder": "Paste a video or audio URL",
+    "add_button": "Add",
+    "mode_video": "Video",
+    "mode_audio": "Audio",
+    "start": "Download",
+    "start_all": "Start all",
+    "clear_all": "Clear all",
+    "remove": "Remove",
+    "retry": "Retry",
+    "status_pending": "Queued",
+    "status_fetching": "Loading info…",
+    "status_ready": "Ready",
+    "status_error": "Failed",
+    "added": "Added to staging list",
+    "unsupported_url": "That link isn't from a supported site",
+    "embed_cover": "Embed cover art",
+    "upload_cover": "Upload cover…",
+    "cover_custom": "Custom cover",
+    "embed_metadata": "Embed metadata",
+    "meta_title": "Title",
+    "meta_artist": "Artist",
+    "meta_album": "Album"
   }
 }
